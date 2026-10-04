@@ -39,27 +39,97 @@ class GitHubUpdateService
             ];
         }
 
-        // Fallback: check local git repository if available
-        $localSha = trim(shell_exec('git rev-parse HEAD 2>nul || git rev-parse HEAD 2>/dev/null') ?? '');
+        // Fallback: check local git repository using pure PHP file reading (shared host & cPanel safe)
+        $localSha = $this->resolveLocalGitSha();
         if ($localSha && strlen($localSha) >= 7) {
             return [
                 'sha' => $localSha,
                 'short_sha' => substr($localSha, 0, 7),
-                'message' => 'نسخه محلی اولیه',
+                'message' => 'نسخه محلی (v' . config('app.version', '2.0.1') . ')',
                 'author' => 'System',
                 'deployed_at' => null,
                 'source' => 'local_git',
             ];
         }
 
+        $appVersion = config('app.version', '2.0.1');
+
         return [
             'sha' => '0000000',
             'short_sha' => '0000000',
-            'message' => 'اولین نصب (نسخه اولیه)',
+            'message' => "نصب اولیه (v{$appVersion})",
             'author' => 'B Cafe',
             'deployed_at' => null,
             'source' => 'initial',
         ];
+    }
+
+    /**
+     * Resolve the current Git commit SHA without relying on shell_exec/exec.
+     * Completely safe on shared hosting where shell functions are disabled.
+     */
+    protected function resolveLocalGitSha(): ?string
+    {
+        $gitDir = base_path('.git');
+        if (!is_dir($gitDir)) {
+            $parentGit = dirname(base_path()) . DIRECTORY_SEPARATOR . '.git';
+            if (is_dir($parentGit)) {
+                $gitDir = $parentGit;
+            } else {
+                return null;
+            }
+        }
+
+        $headFile = $gitDir . DIRECTORY_SEPARATOR . 'HEAD';
+        if (!file_exists($headFile) || !is_readable($headFile)) {
+            return null;
+        }
+
+        $headContent = trim((string) @file_get_contents($headFile));
+        if (empty($headContent)) {
+            return null;
+        }
+
+        // Case 1: Detached HEAD (HEAD directly contains 40-char SHA)
+        if (preg_match('/^[0-9a-f]{40}$/i', $headContent)) {
+            return $headContent;
+        }
+
+        // Case 2: Ref pointer, e.g., "ref: refs/heads/main"
+        if (str_starts_with($headContent, 'ref:')) {
+            $refPath = trim(substr($headContent, 4));
+            $refFile = $gitDir . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $refPath);
+
+            if (file_exists($refFile) && is_readable($refFile)) {
+                $sha = trim((string) @file_get_contents($refFile));
+                if (preg_match('/^[0-9a-f]{40}$/i', $sha)) {
+                    return $sha;
+                }
+            }
+
+            // Case 3: Packed refs (.git/packed-refs)
+            $packedRefsFile = $gitDir . DIRECTORY_SEPARATOR . 'packed-refs';
+            if (file_exists($packedRefsFile) && is_readable($packedRefsFile)) {
+                $packed = @file_get_contents($packedRefsFile);
+                if ($packed && preg_match('/^([0-9a-f]{40})\s+' . preg_quote($refPath, '/') . '/m', $packed, $matches)) {
+                    return $matches[1];
+                }
+            }
+        }
+
+        // Safe fallback only if shell_exec is enabled and allowed
+        if (function_exists('shell_exec')) {
+            try {
+                $cmdOutput = trim((string) @\shell_exec('git rev-parse HEAD 2>nul || git rev-parse HEAD 2>/dev/null'));
+                if (preg_match('/^[0-9a-f]{40}$/i', $cmdOutput)) {
+                    return $cmdOutput;
+                }
+            } catch (\Throwable) {
+                // Ignore any shell error
+            }
+        }
+
+        return null;
     }
 
     /**

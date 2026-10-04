@@ -108,10 +108,12 @@ class DatabaseBackupCommand extends Command
         ];
 
         // Check PATH
-        $pathBinary = trim(shell_exec(DIRECTORY_SEPARATOR === '\\' ? 'where mysqldump 2>nul' : 'which mysqldump 2>/dev/null') ?? '');
-        if (!empty($pathBinary) && !str_contains($pathBinary, 'Could not find')) {
-            $first = explode("\n", $pathBinary)[0];
-            return trim($first);
+        if (function_exists('shell_exec')) {
+            $pathBinary = trim(@\shell_exec(DIRECTORY_SEPARATOR === '\\' ? 'where mysqldump 2>nul' : 'which mysqldump 2>/dev/null') ?? '');
+            if (!empty($pathBinary) && !str_contains($pathBinary, 'Could not find')) {
+                $first = explode("\n", $pathBinary)[0];
+                return trim($first);
+            }
         }
 
         foreach ($candidates as $cand) {
