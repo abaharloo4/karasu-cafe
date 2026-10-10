@@ -45,14 +45,14 @@ class GitHubUpdateService
             return [
                 'sha' => $localSha,
                 'short_sha' => substr($localSha, 0, 7),
-                'message' => 'نسخه محلی (v' . config('app.version', '2.0.1') . ')',
+                'message' => 'نسخه محلی (v' . config('app.version', '2.0.2') . ')',
                 'author' => 'System',
                 'deployed_at' => null,
                 'source' => 'local_git',
             ];
         }
 
-        $appVersion = config('app.version', '2.0.1');
+        $appVersion = config('app.version', '2.0.2');
 
         return [
             'sha' => '0000000',
