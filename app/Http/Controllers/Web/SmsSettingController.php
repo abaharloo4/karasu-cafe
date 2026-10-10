@@ -71,6 +71,15 @@ class SmsSettingController extends Controller
             $setting->save();
         }
 
+        // Auto-heal schema on MySQL if column is still varchar(255)
+        try {
+            if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+                \Illuminate\Support\Facades\DB::statement('ALTER TABLE `sms_settings` MODIFY `password` TEXT NULL');
+            }
+        } catch (\Throwable) {
+            // Ignore if already text or lacks DDL rights
+        }
+
         return view('settings.sms', compact('setting'));
     }
 
@@ -147,7 +156,21 @@ class SmsSettingController extends Controller
             $updateData['password'] = $validated['password'];
         }
 
-        $setting->update($updateData);
+        try {
+            $setting->update($updateData);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Auto-heal if column 'password' is too narrow for encrypted ciphertext on MySQL
+            if (str_contains($e->getMessage(), '22001') || str_contains($e->getMessage(), '1406') || str_contains($e->getMessage(), 'password')) {
+                try {
+                    \Illuminate\Support\Facades\DB::statement('ALTER TABLE `sms_settings` MODIFY `password` TEXT NULL');
+                    $setting->update($updateData);
+                } catch (\Throwable) {
+                    throw $e;
+                }
+            } else {
+                throw $e;
+            }
+        }
 
         return redirect()->back()->with('success', 'تنظیمات پیامک و تمامی قالب‌های وضعیت سفارش با موفقیت به‌روزرسانی شد.');
     }
