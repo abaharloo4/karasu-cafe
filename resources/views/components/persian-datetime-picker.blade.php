@@ -4,7 +4,7 @@
     'label' => null,
     'placeholder' => 'انتخاب تاریخ و زمان...',
     'required' => false,
-    'minYear' => 1400,
+    'minYear' => 1320,
     'maxYear' => 1410,
 ])
 
@@ -21,18 +21,18 @@
         <label class="block text-xs font-bold text-[#19242B] mb-1.5 flex items-center justify-between">
             <span>{{ $label }}</span>
             <template x-if="displayFa">
-                <span class="text-[11px] font-mono font-black text-[#3C6E71] bg-[#3C6E71]/10 px-2 py-0.5 rounded-lg border border-[#3C6E71]/20 tabular-nums" x-text="displayFa"></span>
+                <span class="text-[11px] font-mono font-black text-[#3C6E71] bg-[#3C6E71]/10 px-2.5 py-0.5 rounded-lg border border-[#3C6E71]/20 tabular-nums" x-text="displayFa"></span>
             </template>
         </label>
     @endif
 
-    <!-- Hidden Input for Laravel Form Submission (Gregorian YYYY-MM-DDTHH:mm or YYYY-MM-DD HH:mm:ss) -->
+    <!-- Hidden Input for Laravel Form Submission (Gregorian YYYY-MM-DDTHH:mm) -->
     <input type="hidden"
            name="{{ $name }}"
            :value="gregorianIsoValue"
            @if($required) required @endif>
 
-    <!-- Trigger Input Button (VibeFarsi Graphite Style) -->
+    <!-- Trigger Button -->
     <div class="relative">
         <button type="button"
                 @click="openPicker()"
@@ -40,7 +40,8 @@
             <div class="flex items-center gap-2.5">
                 <div class="w-7 h-7 rounded-lg bg-[#3C6E71]/10 text-[#3C6E71] flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        <rect x="3" y="4" width="18" height="18" rx="3" stroke-width="2"/>
+                        <path stroke-linecap="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/>
                     </svg>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -73,152 +74,181 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-         class="absolute z-50 mt-2 start-0 w-[320px] sm:w-[350px] bg-white border border-[#CBD5E1] rounded-3xl shadow-2xl p-4 text-xs select-none backdrop-blur-md"
+         class="absolute z-50 mt-2 start-0 w-[325px] sm:w-[350px] bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl p-4 text-xs select-none backdrop-blur-md"
          style="display: none;">
 
-        <!-- Header Tabs: Date (Jalali) vs Visual Time (24h) -->
-        <div class="bg-[#19242B] text-white p-3 rounded-2xl flex items-center justify-between mb-3 shadow-inner">
+        <!-- Header Tabs: Calendar Sheet vs Wristwatch -->
+        <div class="bg-slate-800 text-white p-2.5 rounded-2xl flex items-center justify-between mb-3 border border-slate-700">
             <div class="flex items-center gap-1.5 w-full">
-                <!-- Date Tab -->
+                <!-- Date Tab (Calendar) -->
                 <button type="button"
                         @click="activeTab = 'date'"
-                        :class="activeTab === 'date' ? 'bg-[#3C6E71] text-white font-black shadow-xs' : 'bg-white/10 text-slate-300 hover:bg-white/20'"
+                        :class="activeTab === 'date' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
                         class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <span x-text="selectedDateText || 'انتخاب تاریخ'"></span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span x-text="selectedDateText || 'تقویم روز'"></span>
                 </button>
 
-                <!-- Time Tab -->
+                <!-- Time Tab (Wristwatch) -->
                 <button type="button"
                         @click="activeTab = 'time'"
-                        :class="activeTab === 'time' ? 'bg-[#3C6E71] text-white font-black shadow-xs' : 'bg-white/10 text-slate-300 hover:bg-white/20'"
+                        :class="activeTab === 'time' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
                         class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3 2"/></svg>
-                    <span class="font-mono dir-ltr" x-text="`${pad(tempHour)}:${pad(tempMinute)}`"></span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3l2 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5V3h6v2M9 19v2h6v-2"/></svg>
+                    <span class="font-mono dir-ltr" x-text="`ساعت ${pad(hour)}:${pad(minute)}`"></span>
                 </button>
             </div>
         </div>
 
-        <!-- 1. DATE PICKER VIEW -->
-        <div x-show="activeTab === 'date'" class="space-y-3">
-            <!-- Month & Year Controls -->
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                <button type="button" @click="prevMonth()" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors">
-                    <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                </button>
-
+        <!-- 1. CALENDAR SHEET VIEW -->
+        <div x-show="activeTab === 'date'" class="bg-white p-3 rounded-2xl shadow-inner text-[#19242B]">
+            <!-- Calendar Navigation Header -->
+            <div class="bg-[#19242B] text-white p-2.5 rounded-xl flex items-center justify-between mb-2">
                 <div class="flex items-center gap-1">
-                    <select x-model="viewMonth" class="bg-slate-50 border border-slate-200 text-[#284B63] font-black text-xs rounded-lg px-2 py-1 outline-none cursor-pointer">
-                        <template x-for="(mName, mIdx) in months" :key="mIdx">
-                            <option :value="mIdx + 1" x-text="mName" :selected="viewMonth === mIdx + 1"></option>
-                        </template>
-                    </select>
-
-                    <select x-model="viewYear" class="bg-slate-50 border border-slate-200 text-[#284B63] font-black text-xs rounded-lg px-2 py-1 outline-none cursor-pointer tabular-nums">
-                        <template x-for="y in availableYears" :key="y">
-                            <option :value="y" x-text="y" :selected="viewYear === y"></option>
-                        </template>
-                    </select>
+                    <button type="button" @click="changeYear(-1)" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&laquo;</button>
+                    <button type="button" @click="toggleView('years')" class="px-2 py-0.5 rounded bg-white/15 text-xs font-mono font-bold" x-text="viewYear"></button>
+                    <button type="button" @click="changeYear(1)" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&raquo;</button>
                 </div>
-
-                <button type="button" @click="nextMonth()" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors">
-                    <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </button>
-            </div>
-
-            <!-- Weekdays -->
-            <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 text-[11px]">
-                <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span class="text-rose-500">ج</span>
+                <div class="flex items-center gap-1">
+                    <button type="button" @click="prevMonth()" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&lsaquo;</button>
+                    <button type="button" @click="toggleView('months')" class="px-2 py-0.5 rounded bg-white/15 text-xs font-bold" x-text="months[viewMonth - 1]"></button>
+                    <button type="button" @click="nextMonth()" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&rsaquo;</button>
+                </div>
             </div>
 
             <!-- Days Grid -->
-            <div class="grid grid-cols-7 gap-1 text-center">
-                <template x-for="blank in firstWeekdayOfMonth" :key="'blank-' + blank">
-                    <div class="h-8"></div>
-                </template>
+            <div x-show="calendarView === 'days'">
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-400 text-[10px] mb-1">
+                    <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span class="text-rose-500">ج</span>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center">
+                    <template x-for="blank in firstWeekdayOfMonth" :key="'blank-' + blank">
+                        <div class="h-7"></div>
+                    </template>
+                    <template x-for="day in daysInCurrentMonth" :key="'day-' + day">
+                        <button type="button"
+                                @click="selectDay(day)"
+                                :class="{
+                                    'bg-[#3C6E71] text-white font-black scale-105 shadow-sm': isSelected(day),
+                                    'bg-teal-50 text-[#3C6E71] font-bold border border-teal-200': isToday(day) && !isSelected(day),
+                                    'text-slate-700 hover:bg-slate-100 font-medium': !isSelected(day) && !isToday(day),
+                                    'text-rose-600': isFriday(day) && !isSelected(day)
+                                }"
+                                class="h-7 w-7 mx-auto rounded-lg flex items-center justify-center text-[11px] tabular-nums font-mono transition-all">
+                            <span x-text="day"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
 
-                <template x-for="day in daysInCurrentMonth" :key="'day-' + day">
-                    <button type="button"
-                            @click="selectDay(day)"
-                            :class="{
-                                'bg-[#3C6E71] text-white font-black shadow-xs': isSelected(day),
-                                'bg-teal-50 text-[#3C6E71] font-bold border border-teal-200': isToday(day) && !isSelected(day),
-                                'text-slate-700 hover:bg-slate-100 font-medium': !isSelected(day) && !isToday(day),
-                                'text-rose-600': isFriday(day) && !isSelected(day)
-                            }"
-                            class="h-8 w-8 mx-auto rounded-lg flex items-center justify-center text-xs tabular-nums transition-all btn-tactile">
-                        <span x-text="day"></span>
+            <!-- Year Picker Grid -->
+            <div x-show="calendarView === 'years'" class="space-y-1.5 py-1">
+                <div class="flex items-center justify-between text-[10px] text-slate-500">
+                    <span>انتخاب سال:</span>
+                    <div class="flex items-center gap-1 font-mono">
+                        <button type="button" @click="yearPageOffset -= 12" class="px-1.5 py-0.5 rounded bg-slate-100">&lt;</button>
+                        <button type="button" @click="yearPageOffset += 12" class="px-1.5 py-0.5 rounded bg-slate-100">&gt;</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <template x-for="y in visibleYearsPage" :key="'y-pg-' + y">
+                        <button type="button" @click="pickYear(y)" :class="viewYear === y ? 'bg-[#3C6E71] text-white font-bold' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'" class="py-1.5 rounded-lg text-xs font-mono tabular-nums">
+                            <span x-text="y"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Month Picker Grid -->
+            <div x-show="calendarView === 'months'" class="grid grid-cols-3 gap-1.5 py-1">
+                <template x-for="(mName, mIdx) in months" :key="'m-pg-' + mIdx">
+                    <button type="button" @click="pickMonth(mIdx + 1)" :class="viewMonth === (mIdx + 1) ? 'bg-[#3C6E71] text-white font-bold' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'" class="py-1.5 rounded-lg text-xs font-bold">
+                        <span x-text="mName"></span>
                     </button>
                 </template>
             </div>
         </div>
 
-        <!-- 2. VISUAL TIME PICKER VIEW (24-Hour Dial) -->
-        <div x-show="activeTab === 'time'" class="space-y-2">
-            <!-- Mode Switcher (Hours vs Minutes) -->
-            <div class="flex items-center justify-between text-[11px] text-[#64748B] px-1">
-                <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg">
-                    <button type="button" @click="timeMode = 'hours'" :class="timeMode === 'hours' ? 'bg-[#3C6E71] text-white font-black' : 'text-slate-600'" class="px-2 py-0.5 rounded text-[11px] transition-colors">ساعت (۲۴h)</button>
-                    <button type="button" @click="timeMode = 'minutes'" :class="timeMode === 'minutes' ? 'bg-[#3C6E71] text-white font-black' : 'text-slate-600'" class="px-2 py-0.5 rounded text-[11px] transition-colors">دقیقه</button>
-                </div>
-                <span class="font-bold text-[10px] text-slate-500" x-show="timeMode === 'hours'">حلقه بیرونی: ۱۲-۲۳ | داخلی: ۰۰-۱۱</span>
-            </div>
-
-            <!-- Clock Dial (240px) -->
-            <div class="relative w-[240px] h-[240px] mx-auto rounded-full bg-[#F8FAFC] border-2 border-slate-200/80 shadow-inner flex items-center justify-center overflow-hidden">
-                <div class="absolute z-20 w-3 h-3 rounded-full bg-[#3C6E71] border-2 border-white"></div>
-                <div class="absolute z-10 w-0.5 origin-bottom bg-[#3C6E71] transition-all duration-200 ease-out pointer-events-none"
-                     :style="clockHandStyle">
-                    <div class="absolute -top-3 -left-3 w-6 h-6 rounded-full bg-[#3C6E71] opacity-90 shadow-sm"></div>
-                </div>
-
-                <!-- Hours Mode -->
-                <div x-show="timeMode === 'hours'" class="absolute inset-0">
-                    <template x-for="item in outerHours" :key="'dt-h-out-' + item.h">
-                        <button type="button" @click="selectHour(item.h)" :style="`left: ${item.x}px; top: ${item.y}px;`"
-                                :class="tempHour === item.h ? 'bg-[#3C6E71] text-white font-black scale-110 shadow-md ring-2 ring-white z-30' : 'bg-transparent text-slate-800 hover:bg-slate-200/80 font-bold z-20'"
-                                class="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono tabular-nums">
-                            <span x-text="pad(item.h)"></span>
-                        </button>
-                    </template>
-                    <template x-for="item in innerHours" :key="'dt-h-in-' + item.h">
-                        <button type="button" @click="selectHour(item.h)" :style="`left: ${item.x}px; top: ${item.y}px;`"
-                                :class="tempHour === item.h ? 'bg-[#3C6E71] text-white font-black scale-110 shadow-md ring-2 ring-white z-30' : 'bg-transparent text-slate-500 hover:bg-slate-200/80 font-bold z-20'"
-                                class="absolute -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono tabular-nums">
-                            <span x-text="pad(item.h)"></span>
-                        </button>
-                    </template>
-                </div>
-
-                <!-- Minutes Mode -->
-                <div x-show="timeMode === 'minutes'" class="absolute inset-0">
-                    <template x-for="item in minuteSteps" :key="'dt-m-' + item.m">
-                        <button type="button" @click="selectMinute(item.m)" :style="`left: ${item.x}px; top: ${item.y}px;`"
-                                :class="tempMinute === item.m ? 'bg-[#3C6E71] text-white font-black scale-110 shadow-md ring-2 ring-white z-30' : 'bg-transparent text-slate-800 hover:bg-slate-200/80 font-bold z-20'"
-                                class="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono tabular-nums">
-                            <span x-text="pad(item.m)"></span>
-                        </button>
-                    </template>
+        <!-- 2. WRISTWATCH VIEW (ساعت مچی ۲۴ ساعته) -->
+        <div x-show="activeTab === 'time'" class="py-1 flex flex-col items-center justify-center text-white">
+            <div class="flex items-center justify-between w-full mb-1 text-[11px] px-1">
+                <span class="text-emerald-400 font-bold" x-text="activeHand === 'hour' ? 'عقربه ساعت‌شمار (۲۴h)' : 'عقربه دقیقه‌شمار'"></span>
+                <div class="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg">
+                    <button type="button" @click="activeHand = 'hour'" :class="activeHand === 'hour' ? 'bg-[#3C6E71] text-white font-bold' : 'text-slate-400'" class="px-2 py-0.5 rounded text-[10px]">ساعت</button>
+                    <button type="button" @click="activeHand = 'minute'" :class="activeHand === 'minute' ? 'bg-[#3C6E71] text-white font-bold' : 'text-slate-400'" class="px-2 py-0.5 rounded text-[10px]">دقیقه</button>
                 </div>
             </div>
+
+            <!-- Mini Wristwatch Design -->
+            <div class="w-20 h-3 rounded-t-lg bg-gradient-to-b from-[#201410] to-[#3A2219]"></div>
+            <div class="relative w-[230px] h-[230px] rounded-full bg-gradient-to-br from-slate-600 via-slate-800 to-slate-900 p-2 shadow-2xl border-4 border-slate-600 flex items-center justify-center">
+                <!-- Crown button -->
+                <button type="button" @click="toggleHand()" class="absolute -end-3 top-1/2 -translate-y-1/2 w-3 h-7 bg-slate-300 rounded-e border border-slate-600 z-30"></button>
+                <!-- Dial -->
+                <div class="relative w-full h-full rounded-full bg-[#0C1318] border border-slate-700 shadow-inner flex items-center justify-center overflow-hidden">
+                    <!-- Digital time window -->
+                    <div class="absolute top-9 z-20 px-2 py-0.5 rounded bg-[#141F27] border border-slate-700 text-center font-mono text-[11px] font-bold text-emerald-400 dir-ltr">
+                        <span x-text="pad(hour)"></span>:<span x-text="pad(minute)"></span>
+                    </div>
+
+                    <!-- Pivot -->
+                    <div class="absolute z-30 w-3 h-3 rounded-full bg-amber-400 border border-white"></div>
+                    <!-- Hour Hand -->
+                    <div class="absolute z-20 w-1 bg-white origin-bottom pointer-events-none transition-transform duration-200"
+                         :style="`height: 50px; transform: rotate(${hourAngle}deg); bottom: 104px; left: 104.5px;`"></div>
+                    <!-- Minute Hand -->
+                    <div class="absolute z-20 w-0.5 bg-emerald-400 origin-bottom pointer-events-none transition-transform duration-200"
+                         :style="`height: 72px; transform: rotate(${minuteAngle}deg); bottom: 104px; left: 104.5px;`"></div>
+
+                    <!-- Hours -->
+                    <div x-show="activeHand === 'hour'" class="absolute inset-0 z-10">
+                        <template x-for="item in outerHours" :key="'dt-wh-out-' + item.h">
+                            <button type="button" @click="selectHour(item.h)" :style="`left: ${item.x}px; top: ${item.y}px;`"
+                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 ring-2 ring-white z-30' : 'text-slate-300 hover:bg-white/20 font-bold z-20'"
+                                    class="absolute -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono tabular-nums">
+                                <span x-text="pad(item.h)"></span>
+                            </button>
+                        </template>
+                        <template x-for="item in innerHours" :key="'dt-wh-in-' + item.h">
+                            <button type="button" @click="selectHour(item.h)" :style="`left: ${item.x}px; top: ${item.y}px;`"
+                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 ring-2 ring-white z-30' : 'text-slate-400 hover:bg-white/20 font-bold z-20'"
+                                    class="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-mono tabular-nums">
+                                <span x-text="pad(item.h)"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Minutes -->
+                    <div x-show="activeHand === 'minute'" class="absolute inset-0 z-10">
+                        <template x-for="item in minuteSteps" :key="'dt-wh-m-' + item.m">
+                            <button type="button" @click="selectMinute(item.m)" :style="`left: ${item.x}px; top: ${item.y}px;`"
+                                    :class="minute === item.m ? 'bg-emerald-500 text-white font-black scale-110 ring-2 ring-white z-30' : 'text-slate-200 hover:bg-white/20 font-bold z-20'"
+                                    class="absolute -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono tabular-nums">
+                                <span x-text="pad(item.m)"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <div class="w-20 h-3 rounded-b-lg bg-gradient-to-t from-[#201410] to-[#3A2219]"></div>
 
             <!-- Stepper -->
-            <div class="flex items-center justify-center gap-1 dir-ltr text-[11px]">
-                <button type="button" @click="stepMinute(-5)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-bold">-۵</button>
-                <button type="button" @click="stepMinute(-1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-bold">-۱</button>
-                <span class="px-2 font-mono font-black text-xs text-[#19242B]" x-text="pad(tempMinute)"></span>
-                <button type="button" @click="stepMinute(1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-bold">+۱</button>
-                <button type="button" @click="stepMinute(5)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 font-bold">+۵</button>
+            <div class="mt-2 flex items-center justify-center gap-1 dir-ltr text-[11px]">
+                <button type="button" @click="stepMinute(-5)" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">-۵</button>
+                <button type="button" @click="stepMinute(-1)" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">-۱</button>
+                <span class="px-1.5 font-mono font-black text-xs text-emerald-400" x-text="pad(minute)"></span>
+                <button type="button" @click="stepMinute(1)" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">+۱</button>
+                <button type="button" @click="stepMinute(5)" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">+۵</button>
             </div>
         </div>
 
         <!-- Footer Actions -->
-        <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-            <button type="button" @click="isOpen = false" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors">
+        <div class="mt-3 pt-2.5 border-t border-slate-700 flex items-center justify-between gap-2 text-white">
+            <button type="button" @click="isOpen = false" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition-colors">
                 انصراف
             </button>
 
-            <button type="button" @click="confirmAll()" class="px-5 py-1.5 rounded-xl bg-[#3C6E71] hover:bg-[#284B63] text-white font-black shadow-xs transition-colors flex items-center gap-1.5">
+            <button type="button" @click="confirmAll()" class="px-5 py-1.5 rounded-xl bg-[#3C6E71] hover:bg-emerald-600 text-white font-black shadow-md transition-colors flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 <span>تایید تاریخ و ساعت</span>
             </button>
@@ -235,21 +265,23 @@ function persianDateTimePicker(config) {
         gregorianIsoValue: config.initialValue || '',
         displayFa: '',
         activeTab: 'date', // 'date' or 'time'
-        timeMode: 'hours', // 'hours' or 'minutes'
+        calendarView: 'days', // 'days', 'years', 'months'
+        activeHand: 'hour', // 'hour' or 'minute'
         selectedYear: null,
         selectedMonth: null,
         selectedDay: null,
-        tempHour: 12,
-        tempMinute: 0,
+        hour: 12,
+        minute: 0,
         viewYear: 1403,
         viewMonth: 1,
-        minYear: config.minYear || 1400,
+        minYear: config.minYear || 1320,
         maxYear: config.maxYear || 1410,
+        yearPageOffset: 0,
         months: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
-        center: 120, // center of 240px container
-        outerRadius: 90,
-        innerRadius: 56,
-        minuteRadius: 86,
+        dialCenter: 105,
+        outerRadius: 78,
+        innerRadius: 50,
+        minuteRadius: 76,
 
         init() {
             const today = this.gregorianToJalali(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate());
@@ -267,7 +299,6 @@ function persianDateTimePicker(config) {
 
         parseInitialIso(str) {
             try {
-                // e.g. "2026-10-15T14:30" or "2026-10-15 14:30:00"
                 const clean = str.replace('T', ' ');
                 const [datePart, timePart] = clean.split(' ');
                 if (datePart) {
@@ -283,8 +314,8 @@ function persianDateTimePicker(config) {
                 }
                 if (timePart) {
                     const [th, tm] = timePart.split(':').map(Number);
-                    this.tempHour = th || 0;
-                    this.tempMinute = tm || 0;
+                    this.hour = th || 0;
+                    this.minute = tm || 0;
                 }
                 this.updateDisplay();
             } catch (e) {}
@@ -297,12 +328,6 @@ function persianDateTimePicker(config) {
             return '';
         },
 
-        get availableYears() {
-            const list = [];
-            for (let y = this.maxYear; y >= this.minYear; y--) list.push(y);
-            return list;
-        },
-
         openPicker() {
             if (!this.selectedYear) {
                 const today = this.gregorianToJalali(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate());
@@ -312,15 +337,49 @@ function persianDateTimePicker(config) {
             }
             this.isOpen = true;
             this.activeTab = 'date';
+            this.calendarView = 'days';
+            this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+        },
+
+        toggleView(view) {
+            this.calendarView = (this.calendarView === view) ? 'days' : view;
+            if (view === 'years') {
+                this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+            }
+        },
+
+        get visibleYearsPage() {
+            const start = this.yearPageOffset;
+            const years = [];
+            for (let i = 0; i < 12; i++) {
+                const y = start + i;
+                if (y >= this.minYear && y <= this.maxYear) years.push(y);
+            }
+            return years;
+        },
+
+        pickYear(y) {
+            this.viewYear = y;
+            this.calendarView = 'months';
+        },
+
+        pickMonth(m) {
+            this.viewMonth = m;
+            this.calendarView = 'days';
+        },
+
+        changeYear(delta) {
+            const target = this.viewYear + delta;
+            if (target >= this.minYear && target <= this.maxYear) this.viewYear = target;
         },
 
         prevMonth() {
-            if (this.viewMonth === 1) { this.viewMonth = 12; this.viewYear--; }
+            if (this.viewMonth === 1) { this.viewMonth = 12; this.changeYear(-1); }
             else { this.viewMonth--; }
         },
 
         nextMonth() {
-            if (this.viewMonth === 12) { this.viewMonth = 1; this.viewYear++; }
+            if (this.viewMonth === 12) { this.viewMonth = 1; this.changeYear(1); }
             else { this.viewMonth++; }
         },
 
@@ -357,19 +416,29 @@ function persianDateTimePicker(config) {
             this.selectedYear = parseInt(this.viewYear);
             this.selectedMonth = parseInt(this.viewMonth);
             this.selectedDay = parseInt(day);
-            // Smoothly switch to time picker tab
-            setTimeout(() => {
-                this.activeTab = 'time';
-            }, 180);
+            setTimeout(() => { this.activeTab = 'time'; }, 180);
         },
 
-        // Time clock math
+        // Wristwatch Angles & Positioning
+        toggleHand() {
+            this.activeHand = (this.activeHand === 'hour') ? 'minute' : 'hour';
+        },
+
+        get hourAngle() {
+            const h = this.hour % 12;
+            return (h * 30) + (this.minute * 0.5);
+        },
+
+        get minuteAngle() {
+            return this.minute * 6;
+        },
+
         get outerHours() {
             const list = [];
             for (let i = 0; i < 12; i++) {
                 const h = (i === 0) ? 12 : 12 + i;
                 const rad = (i * 30 - 90) * (Math.PI / 180);
-                list.push({ h, x: Math.round(this.center + this.outerRadius * Math.cos(rad)), y: Math.round(this.center + this.outerRadius * Math.sin(rad)) });
+                list.push({ h, x: Math.round(this.dialCenter + this.outerRadius * Math.cos(rad)), y: Math.round(this.dialCenter + this.outerRadius * Math.sin(rad)) });
             }
             return list;
         },
@@ -379,7 +448,7 @@ function persianDateTimePicker(config) {
             for (let i = 0; i < 12; i++) {
                 const h = i;
                 const rad = (i * 30 - 90) * (Math.PI / 180);
-                list.push({ h, x: Math.round(this.center + this.innerRadius * Math.cos(rad)), y: Math.round(this.center + this.innerRadius * Math.sin(rad)) });
+                list.push({ h, x: Math.round(this.dialCenter + this.innerRadius * Math.cos(rad)), y: Math.round(this.dialCenter + this.innerRadius * Math.sin(rad)) });
             }
             return list;
         },
@@ -389,37 +458,25 @@ function persianDateTimePicker(config) {
             for (let i = 0; i < 12; i++) {
                 const m = i * 5;
                 const rad = (i * 30 - 90) * (Math.PI / 180);
-                list.push({ m, x: Math.round(this.center + this.minuteRadius * Math.cos(rad)), y: Math.round(this.center + this.minuteRadius * Math.sin(rad)) });
+                list.push({ m, x: Math.round(this.dialCenter + this.minuteRadius * Math.cos(rad)), y: Math.round(this.dialCenter + this.minuteRadius * Math.sin(rad)) });
             }
             return list;
         },
 
-        get clockHandStyle() {
-            if (this.timeMode === 'hours') {
-                const isOuter = this.tempHour >= 12;
-                const length = isOuter ? this.outerRadius : this.innerRadius;
-                const angleDeg = (this.tempHour % 12) * 30;
-                return `height: ${length}px; transform: rotate(${angleDeg}deg); bottom: ${this.center}px; left: ${this.center - 1}px;`;
-            } else {
-                const angleDeg = this.tempMinute * 6;
-                return `height: ${this.minuteRadius}px; transform: rotate(${angleDeg}deg); bottom: ${this.center}px; left: ${this.center - 1}px;`;
-            }
-        },
-
         selectHour(h) {
-            this.tempHour = h;
-            setTimeout(() => { this.timeMode = 'minutes'; }, 180);
+            this.hour = h;
+            setTimeout(() => { this.activeHand = 'minute'; }, 180);
         },
 
         selectMinute(m) {
-            this.tempMinute = m;
+            this.minute = m;
         },
 
         stepMinute(delta) {
-            let m = this.tempMinute + delta;
+            let m = this.minute + delta;
             if (m < 0) m = 59;
             if (m > 59) m = 0;
-            this.tempMinute = m;
+            this.minute = m;
         },
 
         clearValue() {
@@ -442,8 +499,8 @@ function persianDateTimePicker(config) {
             const gy = g[0];
             const gm = String(g[1]).padStart(2, '0');
             const gd = String(g[2]).padStart(2, '0');
-            const th = this.pad(this.tempHour);
-            const tm = this.pad(this.tempMinute);
+            const th = this.pad(this.hour);
+            const tm = this.pad(this.minute);
 
             this.gregorianIsoValue = `${gy}-${gm}-${gd}T${th}:${tm}`;
             this.updateDisplay();
@@ -452,8 +509,8 @@ function persianDateTimePicker(config) {
 
         updateDisplay() {
             if (this.selectedYear && this.selectedMonth && this.selectedDay) {
-                const th = this.pad(this.tempHour);
-                const tm = this.pad(this.tempMinute);
+                const th = this.pad(this.hour);
+                const tm = this.pad(this.minute);
                 this.displayFa = `${this.selectedYear}/${this.pad(this.selectedMonth)}/${this.pad(this.selectedDay)} ساعت ${th}:${tm}`;
             } else {
                 this.displayFa = '';
@@ -464,6 +521,7 @@ function persianDateTimePicker(config) {
             const breaks = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
             const bl = breaks.length;
             let jp = breaks[0];
+            let jump = 0;
             if (jy < jp || jy >= breaks[bl - 1]) return false;
             for (let i = 1; i < bl; i++) {
                 const jm = breaks[i];
