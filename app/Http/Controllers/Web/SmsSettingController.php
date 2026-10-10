@@ -112,9 +112,8 @@ class SmsSettingController extends Controller
             'template_text_order_cancelled' => 'nullable|string|max:1000',
         ]);
 
-        $setting->update([
+        $updateData = [
             'username' => $validated['username'] ?? null,
-            'password' => $validated['password'] ?? $setting->password,
             'from_number' => $validated['from_number'] ?? null,
             'reminder_hour' => (int) $validated['reminder_hour'],
             'is_reminder_enabled' => $request->has('is_reminder_enabled'),
@@ -142,7 +141,13 @@ class SmsSettingController extends Controller
             'template_text_order_on_the_way' => $validated['template_text_order_on_the_way'] ?? self::DEFAULT_ORDER_ON_THE_WAY_TEXT,
             'template_text_order_delivered' => $validated['template_text_order_delivered'] ?? self::DEFAULT_ORDER_DELIVERED_TEXT,
             'template_text_order_cancelled' => $validated['template_text_order_cancelled'] ?? self::DEFAULT_ORDER_CANCELLED_TEXT,
-        ]);
+        ];
+
+        if (!empty($validated['password'])) {
+            $updateData['password'] = $validated['password'];
+        }
+
+        $setting->update($updateData);
 
         return redirect()->back()->with('success', 'تنظیمات پیامک و تمامی قالب‌های وضعیت سفارش با موفقیت به‌روزرسانی شد.');
     }

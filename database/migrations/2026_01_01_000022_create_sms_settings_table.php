@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('cafe_id')->constrained('cafes')->onDelete('cascade');
             $table->string('driver', 50)->default('mellipayamak');
             $table->string('username', 100)->nullable();
-            $table->string('password', 255)->nullable();
+            $table->text('password')->nullable();
             $table->string('from_number', 50)->nullable();
             $table->integer('reminder_hour')->default(18); // 18:00 (6 PM)
             $table->boolean('is_reminder_enabled')->default(true);

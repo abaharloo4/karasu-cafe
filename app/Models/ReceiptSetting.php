@@ -96,9 +96,10 @@ class ReceiptSetting extends Model
      */
     public static function getForCafe(int $cafeId = 1): self
     {
-        return \Illuminate\Support\Facades\Cache::remember("settings_receipt_{$cafeId}", 3600, function () use ($cafeId) {
-            return static::firstOrCreate(
-                ['cafe_id' => $cafeId],
+        \Illuminate\Support\Facades\Cache::forget("settings_receipt_{$cafeId}");
+
+        return static::firstOrCreate(
+            ['cafe_id' => $cafeId],
             [
                 'paper_width' => '80mm',
                 'font_family' => 'vazirmatn',
@@ -138,8 +139,8 @@ class ReceiptSetting extends Model
                 'show_instagram' => true,
                 'instagram_handle' => '@bcafe.shiraz',
                 'auto_print' => true,
-            ]);
-        });
+            ]
+        );
     }
 
     /**
