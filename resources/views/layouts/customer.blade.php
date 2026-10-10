@@ -17,6 +17,8 @@
 </head>
 <body class="h-full antialiased selection:bg-[#3C6E71] selection:text-white bg-[#F7F9FA] text-[#353535]" x-data="{ sidebarOpen: false }">
 
+    @include('partials.page-preloader')
+
     <!-- Mobile Top Header Bar -->
     <header class="md:hidden bg-white border-b border-[#D9D9D9] sticky top-0 z-30 px-4 h-16 flex items-center justify-between shadow-2xs">
         <div class="flex items-center gap-3">

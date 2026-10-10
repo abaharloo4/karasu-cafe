@@ -18,6 +18,8 @@
       @keydown.escape="closeProductModal(); mobileDrawerOpen = false"
       class="h-full antialiased selection:bg-[#3C6E71] selection:text-[#F7F9FA] bg-[#F7F9FA]/35 text-[#353535] pb-36 relative font-sans">
 
+    @include('partials.page-preloader')
+
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#353535]/10 shadow-xs">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
@@ -64,15 +66,125 @@
                 </a>
 
                 @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
-                    <a href="{{ route('dashboard') }}" class="hidden sm:flex px-4 py-2.5 bg-[#3C6E71] text-white hover:bg-[#284B63] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 items-center gap-2 shadow-xs transition-colors min-h-[44px]">
-                        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span>پنل مدیریت کافه</span>
-                    </a>
+                    <div class="relative hidden sm:block" x-data="{ userMenuOpen: false }">
+                        <button type="button" @click="userMenuOpen = !userMenuOpen"
+                                class="px-4 py-2.5 bg-[#3C6E71] text-white hover:bg-[#284B63] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 flex items-center gap-2 shadow-xs transition-colors min-h-[44px]">
+                            <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>پنل مدیریت کافه</span>
+                            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <!-- Floating Popover Dropdown -->
+                        <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                             class="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-[#353535]/15 py-2 z-50 overflow-hidden"
+                             style="display: none;">
+                            <div class="px-4 py-3 border-b border-[#353535]/10 bg-[#F7F9FA]">
+                                <div class="text-xs font-black text-[#353535]">{{ auth()->user()->name }}</div>
+                                <div class="text-[11px] text-[#3C6E71] font-bold">مدیر سیستم کافه</div>
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                    <span>پیشخوان مدیریت</span>
+                                </a>
+                                <a href="{{ route('orders.live') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>سفارشات زنده آشپزخانه / بار</span>
+                                </a>
+                                <a href="{{ route('products.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <span>مدیریت منو و محصولات</span>
+                                </a>
+                                <a href="{{ route('admin.coupons.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                                    <span>کدهای تخفیف</span>
+                                </a>
+                                <a href="{{ route('admin.loyalty.settings') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                                    <span>تنظیمات باشگاه و کادو تولد</span>
+                                </a>
+                            </div>
+                            <div class="border-t border-[#353535]/10 pt-1">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                        <span>خروج از پنل مدیریت</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 @elseif($customer ?? false)
-                    <a href="{{ route('customer.dashboard') }}" class="hidden sm:flex px-4 py-2.5 bg-[#3C6E71]/15 text-[#353535] hover:bg-[#3C6E71] hover:text-[#F7F9FA] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 items-center gap-2 shadow-xs transition-colors min-h-[44px]">
-                        <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span>پنل من ({{ $customer->name }})</span>
-                    </a>
+                    <div class="relative hidden sm:block" x-data="{ userMenuOpen: false }">
+                        <button type="button" @click="userMenuOpen = !userMenuOpen"
+                                class="px-4 py-2.5 bg-[#3C6E71]/15 text-[#353535] hover:bg-[#3C6E71] hover:text-[#F7F9FA] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 flex items-center gap-2 shadow-xs transition-colors min-h-[44px]">
+                            <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span>{{ $customer->name }}</span>
+                            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <!-- Floating Popover Dropdown -->
+                        <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                             class="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-[#353535]/15 py-2 z-50 overflow-hidden"
+                             style="display: none;">
+                            <div class="px-4 py-3 border-b border-[#353535]/10 bg-[#F7F9FA]">
+                                <div class="text-xs font-black text-[#353535]">{{ $customer->name }}</div>
+                                <div class="text-[11px] text-[#353535]/70 font-mono mt-0.5">{{ $customer->phone }}</div>
+                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-[#353535]/10 text-[11px]">
+                                    <span class="inline-flex items-center gap-1 font-bold text-[#3C6E71]">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        {{ number_format($customer->loyalty_points ?? 0) }} امتیاز
+                                    </span>
+                                    <span class="text-[#353535]/40">•</span>
+                                    <span class="font-bold text-[#284B63]">{{ number_format($customer->wallet_balance ?? 0) }} ت کیف</span>
+                                </div>
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                    <span>پیشخوان و وضعیت سفارش‌ها</span>
+                                </a>
+                                <a href="{{ route('customer.orders') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <span>تاریخچه سفارشات من</span>
+                                </a>
+                                <a href="{{ route('customer.club') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>باشگاه مشتریان و امتیازات</span>
+                                </a>
+                                <a href="{{ route('customer.addresses') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span>آدرس‌های تحویل من</span>
+                                </a>
+                                <a href="{{ route('customer.subscriptions') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
+                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span>اشتراک‌های قهوه من</span>
+                                </a>
+                            </div>
+                            <div class="border-t border-[#353535]/10 pt-1">
+                                <form method="POST" action="{{ route('customer.logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                        <span>خروج از حساب</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('customer.login') }}" class="hidden sm:flex px-4 py-2.5 bg-[#353535] text-[#F7F9FA] hover:bg-[#1E2912] rounded-xl text-xs font-bold btn-tactile border border-[#353535]/15 items-center gap-2 shadow-xs min-h-[44px]">
                         <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
@@ -803,6 +915,57 @@
             </div>
         </div>
     </footer>
+
+    <!-- Floating Cart Capsule (Mobile & Desktop) -->
+    <div x-show="cartTotalCount > 0"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-6 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave-end="opacity-0 translate-y-6 sm:scale-95"
+         style="display: none;"
+         class="fixed z-40 inset-x-3 bottom-4 sm:inset-x-auto sm:bottom-6 sm:left-6">
+        
+        <!-- Mobile View (Full Bar) -->
+        <div class="sm:hidden bg-[#353535] text-[#F7F9FA] rounded-2xl shadow-2xl p-3 flex items-center justify-between border border-white/10 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <div class="relative w-10 h-10 rounded-xl bg-[#3C6E71] flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-[#353535] font-black text-[11px] flex items-center justify-center tabular-nums" x-text="cartTotalCount"></span>
+                </div>
+                <div>
+                    <div class="text-[11px] text-white/70 font-medium">مجموع سبد خرید</div>
+                    <div class="text-xs font-black tabular-nums text-white" x-text="(cartTotalPrice.toLocaleString('fa-IR')) + ' تومان'"></div>
+                </div>
+            </div>
+            <a href="{{ route('cart.index') }}" @click="syncToStorage()"
+               class="px-4 py-2.5 rounded-xl bg-[#3C6E71] hover:bg-[#284B63] text-white text-xs font-black flex items-center gap-1.5 btn-tactile shadow-xs">
+                <span>تکمیل سفارش</span>
+                <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+
+        <!-- Desktop View (Floating Island Capsule) -->
+        <div class="hidden sm:flex items-center gap-4 bg-[#353535]/95 text-[#F7F9FA] rounded-full shadow-2xl px-5 py-3 border border-white/15 backdrop-blur-md">
+            <div class="flex items-center gap-2.5">
+                <div class="relative w-9 h-9 rounded-full bg-[#3C6E71] flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-[#353535] font-black text-[10px] flex items-center justify-center tabular-nums" x-text="cartTotalCount"></span>
+                </div>
+                <div class="text-right">
+                    <div class="text-[11px] text-white/70 font-medium"><span x-text="cartTotalCount"></span> آیتم در سبد</div>
+                    <div class="text-xs font-black tabular-nums text-white" x-text="(cartTotalPrice.toLocaleString('fa-IR')) + ' تومان'"></div>
+                </div>
+            </div>
+            <div class="h-6 w-px bg-white/20"></div>
+            <a href="{{ route('cart.index') }}" @click="syncToStorage()"
+               class="px-4 py-2 rounded-full bg-[#3C6E71] hover:bg-[#284B63] text-white text-xs font-black flex items-center gap-1.5 btn-tactile shadow-xs transition-colors">
+                <span>مشاهده سبد و تسویه</span>
+                <svg class="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
 
     <!-- Alpine.js Storefront Cart & Product Modal Logic -->
     <script>

@@ -163,6 +163,53 @@ class CustomerPanelController extends Controller
 
         $loyaltySetting = \App\Models\LoyaltySetting::getForCafe($customer->cafe_id ?? 1);
 
+        // Check and grant birthday gift if applicable
+        $birthdayGiftAwarded = null;
+        if ($customer->birthdate && $loyaltySetting->is_birthday_reward_enabled && (float)$loyaltySetting->birthday_reward_amount > 0) {
+            $todayMonthDay = now()->format('m-d');
+            $birthMonthDay = $customer->birthdate->format('m-d');
+
+            if ($todayMonthDay === $birthMonthDay) {
+                $currentYear = (int) now()->year;
+                $alreadyReceived = \App\Models\BirthdayRewardLog::where('customer_id', $customer->id)
+                    ->where('year', $currentYear)
+                    ->exists();
+
+                if (!$alreadyReceived) {
+                    try {
+                        \App\Models\BirthdayRewardLog::create([
+                            'customer_id' => $customer->id,
+                            'year' => $currentYear,
+                            'sent_at' => now(),
+                        ]);
+
+                        $amount = (float) $loyaltySetting->birthday_reward_amount;
+                        if ($loyaltySetting->birthday_reward_type === 'points') {
+                            $customer->increment('loyalty_points', (int) $amount);
+                            \App\Models\LoyaltyPoint::create([
+                                'customer_id' => $customer->id,
+                                'points' => (int) $amount,
+                                'description' => "هدیه تولد سال {$currentYear} بی کافه",
+                            ]);
+                            $birthdayGiftAwarded = ['type' => 'points', 'amount' => (int) $amount];
+                        } else {
+                            $customer->increment('wallet_balance', $amount);
+                            \App\Models\CustomerCashback::create([
+                                'customer_id' => $customer->id,
+                                'amount' => $amount,
+                                'type' => 'credit',
+                                'description' => "هدیه تولد سال {$currentYear} - واریز نقدی به کیف پول",
+                            ]);
+                            $birthdayGiftAwarded = ['type' => 'wallet', 'amount' => $amount];
+                        }
+                        $customer->refresh();
+                    } catch (\Throwable $e) {
+                        // Avoid crashing if duplicate hit simultaneously
+                    }
+                }
+            }
+        }
+
         $favoriteProducts = $customer->favorites()->with('category')->latest()->take(6)->get();
 
         return view('customer.dashboard', compact(
@@ -176,7 +223,8 @@ class CustomerPanelController extends Controller
             'tierProgress',
             'remainingToNextTier',
             'loyaltySetting',
-            'favoriteProducts'
+            'favoriteProducts',
+            'birthdayGiftAwarded'
         ));
     }
 
@@ -248,17 +296,6 @@ class CustomerPanelController extends Controller
             })
             ->latest()
             ->get();
-        $cafeId = $customer->cafe_id ?? 1;
-        $wheelPrizes = \App\Models\LuckyWheelPrize::where('cafe_id', $cafeId)
-            ->where('status', 'active')
-            ->orderBy('id')
-            ->get();
-
-        $today = \Illuminate\Support\Carbon::today()->toDateString();
-        $hasSpunToday = \App\Models\LuckyWheelSpin::where('customer_id', $customer->id)
-            ->where('spin_date', $today)
-            ->exists();
-
         return view('customer.club', compact(
             'customer',
             'loyaltyPoints',
@@ -269,31 +306,19 @@ class CustomerPanelController extends Controller
             'remainingToNextTier',
             'loyaltySetting',
             'cashbacks',
-            'activeCoupons',
-            'wheelPrizes',
-            'hasSpunToday'
+            'activeCoupons'
         ));
     }
 
     /**
-     * Spin the daily lucky wheel in Customer Portal.
+     * Spin the daily lucky wheel in Customer Portal (Disabled).
      */
     public function spinWheel(Request $request)
     {
-        $customer = auth('customer')->user();
-        $cafeId = $customer->cafe_id ?? 1;
-
-        try {
-            $loyaltyService = app(\App\Services\LoyaltyService::class);
-            $result = $loyaltyService->spinLuckyWheel($cafeId, $customer->id);
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 422);
-        }
+        return response()->json([
+            'success' => false,
+            'message' => 'گردونه شانس در حال حاضر غیرفعال است.',
+        ], 403);
     }
 
     /**

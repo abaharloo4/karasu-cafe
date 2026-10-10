@@ -342,25 +342,23 @@ class CheckoutController extends Controller
                     $discountAmount = round(($subtotal * $customer->tier->discount_percentage) / 100);
                 }
 
-                // Coupon Code discount with ownership check (Anti-IDOR)
+                // Coupon Code discount with WooCommerce rule validation
                 if (!empty($validated['coupon_code'])) {
                     $coupon = \App\Models\Coupon::where('code', strtoupper(trim($validated['coupon_code'])))
-                        ->where('status', 'active')
                         ->first();
 
-                    if ($coupon && (!$coupon->expires_at || $coupon->expires_at->isFuture())) {
-                        // Check if this coupon is restricted to specific customer(s)
-                        $personalBinding = \App\Models\CustomerCoupon::where('coupon_id', $coupon->id)->first();
-                        if (!$personalBinding || $personalBinding->customer_id === $customer->id) {
-                            if ($coupon->discount_type === 'percent') {
-                                $couponDiscount = round(($subtotal * $coupon->discount_value) / 100);
-                            } else {
-                                $couponDiscount = min($subtotal, (float)$coupon->discount_value);
-                            }
+                    if ($coupon) {
+                        $check = $coupon->validateForCart($subtotal, $customer);
+                        if ($check['valid']) {
+                            $couponDiscount = $check['discount_amount'];
                             $discountAmount += $couponDiscount;
 
-                            // Mark personal coupon as used
-                            if ($personalBinding && $personalBinding->customer_id === $customer->id) {
+                            $coupon->increment('times_used');
+
+                            $personalBinding = \App\Models\CustomerCoupon::where('coupon_id', $coupon->id)
+                                ->where('customer_id', $customer?->id)
+                                ->first();
+                            if ($personalBinding) {
                                 $personalBinding->update(['used_at' => now()]);
                             }
                         }
@@ -614,43 +612,28 @@ class CheckoutController extends Controller
     {
         $request->validate(['code' => 'required|string']);
         $code = strtoupper(trim($request->code));
+        $cartTotal = (float) $request->input('cart_total', 0);
+        $customer = auth('customer')->user();
 
-        $coupon = \App\Models\Coupon::where('code', $code)
-            ->where('status', 'active')
-            ->first();
+        $coupon = \App\Models\Coupon::where('code', $code)->first();
 
         if (!$coupon) {
             return response()->json([
                 'valid' => false,
-                'message' => 'کد تخفیف وارد شده معتبر نیست یا غیرفعال شده است.',
+                'message' => 'کد تخفیف وارد شده معتبر نیست یا وجود ندارد.',
             ], 404);
         }
 
-        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+        $check = $coupon->validateForCart($cartTotal, $customer);
+
+        if (!$check['valid']) {
             return response()->json([
                 'valid' => false,
-                'message' => 'مهلت استفاده از این کد تخفیف به پایان رسیده است.',
+                'message' => $check['message'],
             ], 422);
         }
 
-        // Check if coupon belongs to a specific customer (e.g. Birthday coupon)
-        $personalBinding = \App\Models\CustomerCoupon::where('coupon_id', $coupon->id)->first();
-        if ($personalBinding) {
-            $customer = auth('customer')->user();
-            if (!$customer) {
-                return response()->json([
-                    'valid' => false,
-                    'message' => 'این کد تخفیف اختصاصی است. لطفاً ابتدا وارد حساب کاربری خود شوید.',
-                ], 403);
-            }
-
-            if ($personalBinding->customer_id !== $customer->id) {
-                return response()->json([
-                    'valid' => false,
-                    'message' => 'این کد تخفیف متعلق به شماره شما نمی‌باشد.',
-                ], 403);
-            }
-        }
+        $discountAmount = $check['discount_amount'];
 
         return response()->json([
             'valid' => true,
@@ -658,7 +641,9 @@ class CheckoutController extends Controller
             'title' => $coupon->title,
             'discount_type' => $coupon->discount_type,
             'discount_value' => (float) $coupon->discount_value,
-            'message' => 'کد تخفیف «' . $coupon->title . '» اعمال شد.',
+            'max_discount' => $coupon->max_discount ? (float) $coupon->max_discount : null,
+            'discount_amount' => $discountAmount,
+            'message' => $check['message'],
         ]);
     }
 }

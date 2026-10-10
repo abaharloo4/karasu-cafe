@@ -5,6 +5,28 @@
 @section('content')
 <div class="space-y-6">
 
+    <!-- Birthday Celebration Banner -->
+    @if(isset($birthdayGiftAwarded) && $birthdayGiftAwarded)
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 text-white shadow-lg space-y-2 relative overflow-hidden">
+            <div class="absolute -end-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="flex items-center gap-3">
+                <span class="text-3xl animate-bounce">🎂</span>
+                <div>
+                    <h3 class="text-base font-black">زادروزتان خجسته باد، {{ $customer->name }} عزیز! 🎉</h3>
+                    <p class="text-xs text-white/90 mt-0.5">
+                        کادوی تولد اختصاصی شما 
+                        @if($birthdayGiftAwarded['type'] === 'points')
+                            به میزان <span class="font-bold underline">{{ number_format($birthdayGiftAwarded['amount']) }} امتیاز باشگاه</span>
+                        @else
+                            به مبلغ <span class="font-bold underline">{{ number_format($birthdayGiftAwarded['amount']) }} تومان</span>
+                        @endif
+                        با عشق به حسابتان واریز گردید. روزتان پر از شادی و طعم خوش قهوه!
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Active Live Order Card (If Any) -->
     @if($activeOrder)
         <div class="p-5 sm:p-6 rounded-3xl bg-white border-2 border-[#3C6E71] shadow-xs space-y-4">

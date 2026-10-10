@@ -18,6 +18,8 @@ class LoyaltySetting extends Model
         'points_per_order_unit',
         'welcome_bonus_points',
         'birthday_reward_amount',
+        'is_birthday_reward_enabled',
+        'birthday_reward_type',
     ];
 
     protected $casts = [
@@ -27,6 +29,8 @@ class LoyaltySetting extends Model
         'points_per_order_unit' => 'integer',
         'welcome_bonus_points' => 'integer',
         'birthday_reward_amount' => 'decimal:2',
+        'is_birthday_reward_enabled' => 'boolean',
+        'birthday_reward_type' => 'string',
     ];
 
     public function cafe(): BelongsTo
@@ -53,6 +57,8 @@ class LoyaltySetting extends Model
                 'points_per_order_unit' => 10000,
                 'welcome_bonus_points' => 20,
                 'birthday_reward_amount' => 50000.00,
+                'is_birthday_reward_enabled' => true,
+                'birthday_reward_type' => 'wallet',
             ]
         );
     }

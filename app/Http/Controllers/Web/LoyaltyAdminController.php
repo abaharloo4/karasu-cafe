@@ -150,15 +150,20 @@ class LoyaltyAdminController extends Controller
             'min_order_amount' => 'required|numeric|min:0',
             'points_per_order_unit' => 'required|integer|min:1',
             'welcome_bonus_points' => 'required|integer|min:0',
-            'birthday_reward_amount' => 'required|numeric|min:0',
+            'is_birthday_reward_enabled' => 'nullable|boolean',
+            'birthday_reward_type' => 'nullable|in:wallet,points',
+            'birthday_reward_amount' => 'nullable|numeric|min:0',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_birthday_reward_enabled'] = $request->boolean('is_birthday_reward_enabled');
+        $validated['birthday_reward_type'] = $request->input('birthday_reward_type', $settings->birthday_reward_type ?? 'wallet');
+        $validated['birthday_reward_amount'] = (float) $request->input('birthday_reward_amount', $settings->birthday_reward_amount ?? 50000);
 
         $settings->update($validated);
 
         return redirect()->route('admin.loyalty.settings')
-            ->with('success', 'تنظیمات باشگاه مشتریان ذخیره شد.');
+            ->with('success', 'تنظیمات باشگاه مشتریان و هدیه تولد با موفقیت ذخیره شد.');
     }
 
     /**

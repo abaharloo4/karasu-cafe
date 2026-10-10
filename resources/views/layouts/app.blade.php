@@ -23,6 +23,8 @@
       @keydown.escape="searchOpen = false"
       class="h-full flex flex-col md:flex-row antialiased selection:bg-[#3C6E71] selection:text-white text-[#353535] relative overflow-x-hidden">
 
+    @include('partials.page-preloader')
+
     <!-- Mobile Backdrop Overlay for Sidebar -->
     <div x-show="sidebarOpen"
          x-transition:enter="transition-opacity ease-linear duration-200"
@@ -141,6 +143,11 @@
                 <a href="{{ route('admin.loyalty.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('admin.loyalty.*') || request()->routeIs('loyalty.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>باشگاه مشتریان و سطوح (Tiers)</span>
+                </a>
+
+                <a href="{{ route('admin.coupons.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('admin.coupons.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                    <span>کدهای تخفیف (کوپن‌ها)</span>
                 </a>
 
                 <a href="{{ route('reports.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('reports.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">

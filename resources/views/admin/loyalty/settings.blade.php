@@ -69,12 +69,41 @@
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-black text-[#353535] mb-1.5">هدیه تولد (تومان)</label>
-                <input type="number" name="birthday_reward_amount" value="{{ old('birthday_reward_amount', $settings->birthday_reward_amount) }}" required min="0" step="1000"
-                       class="w-full px-4 py-3 rounded-xl bg-white border border-[#D9D9D9] text-[#353535] text-xs font-bold focus:outline-none focus:border-[#3C6E71] focus:ring-1 focus:ring-[#3C6E71] min-h-[46px] dir-ltr text-right tabular-nums">
-                <p class="text-[11px] text-[#353535]/50 mt-1">مبلغی که روز تولد مشتری به کیف‌پولش واریز میشه</p>
-                @error('birthday_reward_amount') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
+            <!-- Birthday Gift Settings Card -->
+            <div class="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-xs font-black text-amber-950 flex items-center gap-2">
+                            <span>🎁 تنظیمات اختصاصی کادو و هدیه تولد مشتری</span>
+                        </h4>
+                        <p class="text-[11px] text-amber-800/80 mt-0.5">مشخص کنید در روز تولد مشتری چه هدیه‌ای و به چه میزانی به او تعلق گیرد.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_birthday_reward_enabled" value="1" {{ old('is_birthday_reward_enabled', $settings->is_birthday_reward_enabled) ? 'checked' : '' }} class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#3C6E71]"></div>
+                        <span class="ms-2 text-xs font-bold text-[#353535]">فعال بودن هدیه تولد</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-amber-200/50">
+                    <div>
+                        <label class="block text-xs font-black text-[#353535] mb-1.5">نوع هدیه تولد *</label>
+                        <select name="birthday_reward_type" class="w-full px-4 py-3 rounded-xl bg-white border border-[#D9D9D9] text-[#353535] text-xs font-bold focus:outline-none focus:border-[#3C6E71] min-h-[46px]">
+                            <option value="wallet" {{ old('birthday_reward_type', $settings->birthday_reward_type) === 'wallet' ? 'selected' : '' }}>شارژ مستقیم کیف‌پول (مبلغ به تومان)</option>
+                            <option value="points" {{ old('birthday_reward_type', $settings->birthday_reward_type) === 'points' ? 'selected' : '' }}>امتیاز وفاداری باشگاه مشتریان</option>
+                        </select>
+                        <p class="text-[11px] text-[#353535]/50 mt-1">نحوه شارژ هدیه در پنل مشتری</p>
+                        @error('birthday_reward_type') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-[#353535] mb-1.5">میزان هدیه تولد (تومان یا امتیاز) *</label>
+                        <input type="number" name="birthday_reward_amount" value="{{ old('birthday_reward_amount', $settings->birthday_reward_amount) }}" required min="0" step="1000"
+                               class="w-full px-4 py-3 rounded-xl bg-white border border-[#D9D9D9] text-[#353535] text-xs font-bold focus:outline-none focus:border-[#3C6E71] focus:ring-1 focus:ring-[#3C6E71] min-h-[46px] dir-ltr text-right tabular-nums">
+                        <p class="text-[11px] text-[#353535]/50 mt-1">مثال: ۵۰۰۰۰ تومان یا ۵۰ امتیاز (یک‌بار در سال به مشتری تعلق می‌گیرد)</p>
+                        @error('birthday_reward_amount') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
 
             <div class="flex items-center justify-end pt-3 border-t border-[#D9D9D9]/50">

@@ -156,6 +156,15 @@ Route::middleware('auth')->group(function () {
     Route::put('/admin/loyalty/wheel-prizes/{prize}', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'updateWheelPrize'])->name('admin.loyalty.wheel-prizes.update');
     Route::delete('/admin/loyalty/wheel-prizes/{prize}', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'deleteWheelPrize'])->name('admin.loyalty.wheel-prizes.delete');
 
+    // Coupons Management (WooCommerce Style)
+    Route::get('/admin/coupons', [\App\Http\Controllers\Web\CouponAdminController::class, 'index'])->name('admin.coupons.index');
+    Route::get('/admin/coupons/create', [\App\Http\Controllers\Web\CouponAdminController::class, 'create'])->name('admin.coupons.create');
+    Route::post('/admin/coupons', [\App\Http\Controllers\Web\CouponAdminController::class, 'store'])->name('admin.coupons.store');
+    Route::get('/admin/coupons/{coupon}/edit', [\App\Http\Controllers\Web\CouponAdminController::class, 'edit'])->name('admin.coupons.edit');
+    Route::put('/admin/coupons/{coupon}', [\App\Http\Controllers\Web\CouponAdminController::class, 'update'])->name('admin.coupons.update');
+    Route::post('/admin/coupons/{coupon}/toggle', [\App\Http\Controllers\Web\CouponAdminController::class, 'toggle'])->name('admin.coupons.toggle');
+    Route::delete('/admin/coupons/{coupon}', [\App\Http\Controllers\Web\CouponAdminController::class, 'destroy'])->name('admin.coupons.destroy');
+
     // Categories Management
     Route::resource('admin/categories', CategoryController::class)->names('categories')->only(['index', 'store', 'update', 'destroy']);
 
