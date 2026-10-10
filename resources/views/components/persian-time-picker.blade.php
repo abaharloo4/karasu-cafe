@@ -79,79 +79,77 @@
 
         <!-- Wristwatch Header & Mode Indicator -->
         <div class="flex items-center justify-between mb-2 px-1 text-white">
-            <div>
-                <span class="text-[10px] text-slate-400 font-bold block">تنظیم ساعت مچی (۲۴ ساعته)</span>
-                <span class="text-xs font-black text-emerald-400" x-text="activeHand === 'hour' ? 'در حال تنظیم: عقربه ساعت‌شمار' : 'در حال تنظیم: عقربه دقیقه‌شمار'"></span>
+            <div class="flex items-center gap-2">
+                <div class="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 shadow-inner text-center">
+                    <div class="font-mono text-sm font-black text-emerald-400 tracking-wider tabular-nums dir-ltr">
+                        <span :class="activeHand === 'hour' ? 'text-white underline decoration-emerald-400 decoration-2' : 'text-slate-300'" x-text="pad(hour)"></span>
+                        <span class="text-emerald-400 animate-pulse">:</span>
+                        <span :class="activeHand === 'minute' ? 'text-white underline decoration-emerald-400 decoration-2' : 'text-slate-300'" x-text="pad(minute)"></span>
+                    </div>
+                </div>
+                <span class="text-[10px] text-slate-400 font-bold" x-text="activeHand === 'hour' ? 'عقربه ساعت‌شمار (۲۴ ساعته)' : 'عقربه دقیقه‌شمار'"></span>
             </div>
 
             <!-- Hand Switcher (ساعت‌شمار یا دقیقه‌شمار) -->
             <div class="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
                 <button type="button"
                         @click="activeHand = 'hour'"
-                        :class="activeHand === 'hour' ? 'bg-[#3C6E71] text-white font-black' : 'text-slate-400 hover:text-white'"
-                        class="px-2.5 py-1 rounded-lg text-[11px] transition-colors">
+                        :class="activeHand === 'hour' ? 'bg-[#3C6E71] text-white font-black shadow-sm' : 'text-slate-400 hover:text-white'"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition-colors">
                     ساعت
                 </button>
                 <button type="button"
                         @click="activeHand = 'minute'"
-                        :class="activeHand === 'minute' ? 'bg-[#3C6E71] text-white font-black' : 'text-slate-400 hover:text-white'"
-                        class="px-2.5 py-1 rounded-lg text-[11px] transition-colors">
+                        :class="activeHand === 'minute' ? 'bg-[#3C6E71] text-white font-black shadow-sm' : 'text-slate-400 hover:text-white'"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition-colors">
                     دقیقه
                 </button>
             </div>
         </div>
 
         <!-- THE AUTHENTIC WRISTWATCH COMPONENT -->
-        <div class="relative py-3 flex flex-col items-center justify-center">
+        <div class="relative py-2 flex flex-col items-center justify-center">
             
-            <!-- Top Watch Strap (بند چرمی بالای ساعت) -->
-            <div class="w-28 h-5 rounded-t-xl bg-gradient-to-b from-[#201410] via-[#3A2219] to-[#2B1710] border-t-2 border-x-2 border-[#150D0A] shadow-md flex items-center justify-center">
-                <div class="w-24 h-px border-t border-dashed border-amber-900/50"></div>
+            <!-- Top Watch Strap (بند چرمی بالای ساعت مچی با دوخت بخیه) -->
+            <div class="w-32 h-5 rounded-t-xl bg-gradient-to-b from-[#1C120C] via-[#352016] to-[#24140D] border-t-2 border-x-2 border-[#120A07] shadow-md flex items-center justify-center">
+                <div class="w-28 h-px border-t border-dashed border-amber-900/60"></div>
             </div>
 
             <!-- Wristwatch Bezel & Case (قاب استیل و تیتانیوم ساعت مچی) -->
-            <div class="relative w-[260px] h-[260px] rounded-full bg-gradient-to-br from-slate-600 via-slate-800 to-slate-900 p-2 shadow-2xl border-4 border-slate-600 flex items-center justify-center">
+            <div class="relative w-[264px] h-[264px] rounded-full bg-gradient-to-br from-slate-500 via-slate-800 to-slate-900 p-2 shadow-2xl border-4 border-slate-600 flex items-center justify-center">
                 
                 <!-- Watch Crown / Winder Knob (پیچ کوک ساعت مچی سمت راست) -->
                 <button type="button"
                         @click="toggleHand()"
                         title="پیچ کوک ساعت مچی (کلیک برای سوئیچ ساعت و دقیقه)"
-                        class="absolute -end-3 top-1/2 -translate-y-1/2 w-3.5 h-8 bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 rounded-e-md border border-slate-700 shadow-md flex flex-col items-center justify-center gap-1 z-30 cursor-pointer hover:scale-105 active:scale-95 transition-transform">
-                    <span class="w-2 h-0.5 bg-slate-700/60 rounded-full"></span>
-                    <span class="w-2 h-0.5 bg-slate-700/60 rounded-full"></span>
-                    <span class="w-2 h-0.5 bg-slate-700/60 rounded-full"></span>
+                        class="absolute -end-3.5 top-1/2 -translate-y-1/2 w-4 h-9 bg-gradient-to-r from-slate-400 via-amber-200 to-slate-500 rounded-e-md border border-slate-700 shadow-md flex flex-col items-center justify-center gap-1 z-30 cursor-pointer hover:scale-105 active:scale-95 transition-transform">
+                    <span class="w-2.5 h-0.5 bg-slate-800/70 rounded-full"></span>
+                    <span class="w-2.5 h-0.5 bg-slate-800/70 rounded-full"></span>
+                    <span class="w-2.5 h-0.5 bg-slate-800/70 rounded-full"></span>
                 </button>
 
-                <!-- Inner Dial Bezel (حلقه داخلی مدرج) -->
-                <div class="relative w-full h-full rounded-full bg-[#0C1318] border-2 border-slate-700/60 shadow-inner flex items-center justify-center overflow-hidden">
+                <!-- Inner Dial Face (صفحه مشکی متالیک ساعت ۲۴۰x۲۴۰ بدون هیچ مانعی) -->
+                <div class="relative w-[240px] h-[240px] rounded-full bg-[#090E12] border-2 border-slate-700 shadow-inner flex items-center justify-center overflow-hidden">
                     
-                    <!-- 60 Minute Tick Marks (حلقه دقیقه‌ای دور صفحه ساعت) -->
+                    <!-- 12 Main Hour Bezel Ticks (نشانگرهای فلزی ۱۲ گانه دور صفحه) -->
                     <template x-for="i in 12" :key="'tick-' + i">
-                        <div class="absolute w-0.5 h-2 bg-slate-600/70 pointer-events-none"
-                             :style="`transform: rotate(${i * 30}deg) translateY(-114px);`"></div>
+                        <div class="absolute w-0.5 h-2.5 bg-slate-600/80 pointer-events-none"
+                             :style="`transform: rotate(${i * 30}deg) translateY(-112px);`"></div>
                     </template>
 
-                    <!-- Digital Sub-dial Window (پنجره دیجیتال ساعت مچی) -->
-                    <div class="absolute top-12 z-20 px-3 py-1 rounded-lg bg-[#141F27] border border-slate-700 shadow-inner text-center">
-                        <div class="font-mono text-xs font-black text-emerald-400 tracking-widest tabular-nums dir-ltr">
-                            <span :class="activeHand === 'hour' ? 'underline font-black text-white' : ''" x-text="pad(hour)"></span>
-                            <span class="text-emerald-400 animate-pulse">:</span>
-                            <span :class="activeHand === 'minute' ? 'underline font-black text-white' : ''" x-text="pad(minute)"></span>
-                        </div>
-                    </div>
-
-                    <!-- Center Pivot Pin (پین یا نگین متالیک مرکزی ساعت مچی) -->
-                    <div class="absolute z-30 w-3.5 h-3.5 rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border border-white shadow-md pointer-events-none"></div>
+                    <!-- Center Pivot Pin (پین یا نگین متالیک طلایی مرکزی ساعت مچی) -->
+                    <div class="absolute z-30 w-4 h-4 rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 border border-white shadow-md pointer-events-none"
+                         style="top: 112px; left: 112px;"></div>
 
                     <!-- Hour Watch Hand (عقربه ساعت‌شمار) -->
                     <div class="absolute z-20 w-1 rounded-full bg-white shadow-md pointer-events-none origin-bottom transition-transform duration-200"
-                         :style="`height: 58px; transform: rotate(${hourAngle}deg); bottom: 119px; left: 118.5px;`">
+                         :style="`height: 55px; transform: rotate(${hourAngle}deg); bottom: 120px; left: 119.5px;`">
                         <div class="absolute -top-1.5 -left-1 w-3 h-3 rounded-full bg-white"></div>
                     </div>
 
-                    <!-- Minute Watch Hand (عقربه دقیقه‌شمار - باریک‌تر و کشیده‌تر با رنگ سبز کافه) -->
+                    <!-- Minute Watch Hand (عقربه دقیقه‌شمار زمردی) -->
                     <div class="absolute z-20 w-0.5 rounded-full bg-emerald-400 shadow-md pointer-events-none origin-bottom transition-transform duration-200"
-                         :style="`height: 85px; transform: rotate(${minuteAngle}deg); bottom: 119px; left: 119px;`">
+                         :style="`height: 85px; transform: rotate(${minuteAngle}deg); bottom: 120px; left: 119.75px;`">
                         <div class="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 rounded-full bg-emerald-400 opacity-90"></div>
                     </div>
 
@@ -162,7 +160,7 @@
                             <button type="button"
                                     @click="selectHour(item.h)"
                                     :style="`left: ${item.x}px; top: ${item.y}px;`"
-                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 shadow-lg ring-2 ring-white z-30' : 'bg-transparent text-slate-300 hover:bg-white/20 font-bold z-20'"
+                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 shadow-lg ring-2 ring-white z-30' : 'bg-transparent text-slate-200 hover:bg-white/20 font-bold z-20'"
                                     class="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono tabular-nums transition-transform">
                                 <span x-text="pad(item.h)"></span>
                             </button>
@@ -195,9 +193,9 @@
                 </div>
             </div>
 
-            <!-- Bottom Watch Strap (بند چرمی پایین ساعت) -->
-            <div class="w-28 h-5 rounded-b-xl bg-gradient-to-t from-[#201410] via-[#3A2219] to-[#2B1710] border-b-2 border-x-2 border-[#150D0A] shadow-md flex items-center justify-center">
-                <div class="w-24 h-px border-t border-dashed border-amber-900/50"></div>
+            <!-- Bottom Watch Strap (بند چرمی پایین ساعت مچی با دوخت بخیه) -->
+            <div class="w-32 h-5 rounded-b-xl bg-gradient-to-t from-[#1C120C] via-[#352016] to-[#24140D] border-b-2 border-x-2 border-[#120A07] shadow-md flex items-center justify-center">
+                <div class="w-28 h-px border-t border-dashed border-amber-900/60"></div>
             </div>
         </div>
 

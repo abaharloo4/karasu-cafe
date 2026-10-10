@@ -102,16 +102,31 @@
 
         <!-- 1. CALENDAR SHEET VIEW -->
         <div x-show="activeTab === 'date'" class="bg-white p-3 rounded-2xl shadow-inner text-[#19242B]">
-            <!-- Calendar Navigation Header -->
+            <!-- Calendar Header (Month & Year Prominent Selectors) -->
             <div class="bg-[#19242B] text-white p-2.5 rounded-xl flex items-center justify-between mb-2">
-                <div class="flex items-center gap-1">
-                    <button type="button" @click="changeYear(-1)" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&laquo;</button>
-                    <button type="button" @click="toggleView('years')" class="px-2 py-0.5 rounded bg-white/15 text-xs font-mono font-bold" x-text="viewYear"></button>
-                    <button type="button" @click="changeYear(1)" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&raquo;</button>
-                </div>
+                <!-- Year Button -->
+                <button type="button"
+                        @click="toggleView('years')"
+                        :class="calendarView === 'years' ? 'bg-[#3C6E71] ring-2 ring-emerald-400' : 'bg-white/10 hover:bg-white/20'"
+                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all">
+                    <span class="text-[10px] text-slate-300">سال:</span>
+                    <span x-text="viewYear" class="text-emerald-300"></span>
+                    <svg class="w-3 h-3 text-emerald-300 transition-transform duration-200" :class="calendarView === 'years' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <!-- Month Button -->
+                <button type="button"
+                        @click="toggleView('months')"
+                        :class="calendarView === 'months' ? 'bg-[#3C6E71] ring-2 ring-emerald-400' : 'bg-white/10 hover:bg-white/20'"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all">
+                    <span class="text-[10px] text-slate-300">ماه:</span>
+                    <span x-text="months[viewMonth - 1]" class="text-emerald-300"></span>
+                    <svg class="w-3 h-3 text-emerald-300 transition-transform duration-200" :class="calendarView === 'months' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <!-- Month Steppers -->
                 <div class="flex items-center gap-1">
                     <button type="button" @click="prevMonth()" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&lsaquo;</button>
-                    <button type="button" @click="toggleView('months')" class="px-2 py-0.5 rounded bg-white/15 text-xs font-bold" x-text="months[viewMonth - 1]"></button>
                     <button type="button" @click="nextMonth()" class="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px]">&rsaquo;</button>
                 </div>
             </div>
@@ -141,14 +156,12 @@
                 </div>
             </div>
 
-            <!-- Year Picker Grid -->
-            <div x-show="calendarView === 'years'" class="space-y-1.5 py-1">
-                <div class="flex items-center justify-between text-[10px] text-slate-500">
-                    <span>انتخاب سال:</span>
-                    <div class="flex items-center gap-1 font-mono">
-                        <button type="button" @click="yearPageOffset -= 12" class="px-1.5 py-0.5 rounded bg-slate-100">&lt;</button>
-                        <button type="button" @click="yearPageOffset += 12" class="px-1.5 py-0.5 rounded bg-slate-100">&gt;</button>
-                    </div>
+            <!-- Year Picker Grid with Decade Navigation -->
+            <div x-show="calendarView === 'years'" class="space-y-2 py-1">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 bg-slate-100 p-1.5 rounded-lg">
+                    <button type="button" @click="stepDecade(-10)" class="px-2 py-0.5 rounded bg-white text-slate-800 text-[10px]">‹ ۱۰ سال قبل</button>
+                    <span class="font-mono text-xs font-bold text-[#3C6E71]" x-text="`${yearPageOffset} تا ${yearPageOffset + 11}`"></span>
+                    <button type="button" @click="stepDecade(10)" class="px-2 py-0.5 rounded bg-white text-slate-800 text-[10px]">۱۰ سال بعد ›</button>
                 </div>
                 <div class="grid grid-cols-3 gap-1.5">
                     <template x-for="y in visibleYearsPage" :key="'y-pg-' + y">
@@ -157,22 +170,41 @@
                         </button>
                     </template>
                 </div>
+                <!-- Decade pills -->
+                <div class="pt-1 border-t border-slate-100 flex flex-wrap gap-1 justify-center text-[10px] font-mono">
+                    <template x-for="dec in availableDecades" :key="'dt-dec-' + dec">
+                        <button type="button" @click="jumpDecade(dec)" :class="yearPageOffset === dec ? 'bg-[#3C6E71] text-white' : 'bg-slate-100 text-slate-700'" class="px-1.5 py-0.5 rounded">
+                            <span x-text="dec"></span>
+                        </button>
+                    </template>
+                </div>
             </div>
 
             <!-- Month Picker Grid -->
-            <div x-show="calendarView === 'months'" class="grid grid-cols-3 gap-1.5 py-1">
-                <template x-for="(mName, mIdx) in months" :key="'m-pg-' + mIdx">
-                    <button type="button" @click="pickMonth(mIdx + 1)" :class="viewMonth === (mIdx + 1) ? 'bg-[#3C6E71] text-white font-bold' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'" class="py-1.5 rounded-lg text-xs font-bold">
-                        <span x-text="mName"></span>
-                    </button>
-                </template>
+            <div x-show="calendarView === 'months'" class="py-1 space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] text-slate-500 bg-slate-100 p-1 rounded-lg">
+                    <span>انتخاب ماه سال:</span>
+                    <button type="button" @click="calendarView = 'days'" class="text-[#3C6E71] font-bold">بازگشت</button>
+                </div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <template x-for="(mName, mIdx) in months" :key="'m-pg-' + mIdx">
+                        <button type="button" @click="pickMonth(mIdx + 1)" :class="viewMonth === (mIdx + 1) ? 'bg-[#3C6E71] text-white font-bold' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'" class="py-2 rounded-lg text-xs font-bold">
+                            <span x-text="mName"></span>
+                        </button>
+                    </template>
+                </div>
             </div>
         </div>
 
         <!-- 2. WRISTWATCH VIEW (ساعت مچی ۲۴ ساعته) -->
         <div x-show="activeTab === 'time'" class="py-1 flex flex-col items-center justify-center text-white">
-            <div class="flex items-center justify-between w-full mb-1 text-[11px] px-1">
-                <span class="text-emerald-400 font-bold" x-text="activeHand === 'hour' ? 'عقربه ساعت‌شمار (۲۴h)' : 'عقربه دقیقه‌شمار'"></span>
+            <div class="flex items-center justify-between w-full mb-1.5 text-[11px] px-1">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-sm font-black text-emerald-400 tabular-nums dir-ltr bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
+                        <span x-text="pad(hour)"></span>:<span x-text="pad(minute)"></span>
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-bold" x-text="activeHand === 'hour' ? 'عقربه ساعت' : 'عقربه دقیقه'"></span>
+                </div>
                 <div class="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg">
                     <button type="button" @click="activeHand = 'hour'" :class="activeHand === 'hour' ? 'bg-[#3C6E71] text-white font-bold' : 'text-slate-400'" class="px-2 py-0.5 rounded text-[10px]">ساعت</button>
                     <button type="button" @click="activeHand = 'minute'" :class="activeHand === 'minute' ? 'bg-[#3C6E71] text-white font-bold' : 'text-slate-400'" class="px-2 py-0.5 rounded text-[10px]">دقیقه</button>
@@ -180,31 +212,27 @@
             </div>
 
             <!-- Mini Wristwatch Design -->
-            <div class="w-20 h-3 rounded-t-lg bg-gradient-to-b from-[#201410] to-[#3A2219]"></div>
-            <div class="relative w-[230px] h-[230px] rounded-full bg-gradient-to-br from-slate-600 via-slate-800 to-slate-900 p-2 shadow-2xl border-4 border-slate-600 flex items-center justify-center">
+            <div class="w-24 h-3.5 rounded-t-lg bg-gradient-to-b from-[#1C120C] to-[#2E1A11]"></div>
+            <div class="relative w-[230px] h-[230px] rounded-full bg-gradient-to-br from-slate-500 via-slate-800 to-slate-900 p-2 shadow-2xl border-4 border-slate-600 flex items-center justify-center">
                 <!-- Crown button -->
-                <button type="button" @click="toggleHand()" class="absolute -end-3 top-1/2 -translate-y-1/2 w-3 h-7 bg-slate-300 rounded-e border border-slate-600 z-30"></button>
+                <button type="button" @click="toggleHand()" title="کوک ساعت" class="absolute -end-3 top-1/2 -translate-y-1/2 w-3.5 h-7 bg-slate-300 rounded-e border border-slate-600 z-30"></button>
+                
                 <!-- Dial -->
-                <div class="relative w-full h-full rounded-full bg-[#0C1318] border border-slate-700 shadow-inner flex items-center justify-center overflow-hidden">
-                    <!-- Digital time window -->
-                    <div class="absolute top-9 z-20 px-2 py-0.5 rounded bg-[#141F27] border border-slate-700 text-center font-mono text-[11px] font-bold text-emerald-400 dir-ltr">
-                        <span x-text="pad(hour)"></span>:<span x-text="pad(minute)"></span>
-                    </div>
-
+                <div class="relative w-full h-full rounded-full bg-[#090E12] border border-slate-700 shadow-inner flex items-center justify-center overflow-hidden">
                     <!-- Pivot -->
-                    <div class="absolute z-30 w-3 h-3 rounded-full bg-amber-400 border border-white"></div>
+                    <div class="absolute z-30 w-3.5 h-3.5 rounded-full bg-amber-400 border border-white" style="top: 98px; left: 98px;"></div>
                     <!-- Hour Hand -->
                     <div class="absolute z-20 w-1 bg-white origin-bottom pointer-events-none transition-transform duration-200"
-                         :style="`height: 50px; transform: rotate(${hourAngle}deg); bottom: 104px; left: 104.5px;`"></div>
+                         :style="`height: 48px; transform: rotate(${hourAngle}deg); bottom: 105px; left: 104.5px;`"></div>
                     <!-- Minute Hand -->
                     <div class="absolute z-20 w-0.5 bg-emerald-400 origin-bottom pointer-events-none transition-transform duration-200"
-                         :style="`height: 72px; transform: rotate(${minuteAngle}deg); bottom: 104px; left: 104.5px;`"></div>
+                         :style="`height: 72px; transform: rotate(${minuteAngle}deg); bottom: 105px; left: 104.75px;`"></div>
 
                     <!-- Hours -->
                     <div x-show="activeHand === 'hour'" class="absolute inset-0 z-10">
                         <template x-for="item in outerHours" :key="'dt-wh-out-' + item.h">
                             <button type="button" @click="selectHour(item.h)" :style="`left: ${item.x}px; top: ${item.y}px;`"
-                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 ring-2 ring-white z-30' : 'text-slate-300 hover:bg-white/20 font-bold z-20'"
+                                    :class="hour === item.h ? 'bg-emerald-500 text-white font-black scale-110 ring-2 ring-white z-30' : 'text-slate-200 hover:bg-white/20 font-bold z-20'"
                                     class="absolute -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono tabular-nums">
                                 <span x-text="pad(item.h)"></span>
                             </button>
@@ -230,7 +258,7 @@
                     </div>
                 </div>
             </div>
-            <div class="w-20 h-3 rounded-b-lg bg-gradient-to-t from-[#201410] to-[#3A2219]"></div>
+            <div class="w-24 h-3.5 rounded-b-lg bg-gradient-to-t from-[#1C120C] to-[#2E1A11]"></div>
 
             <!-- Stepper -->
             <div class="mt-2 flex items-center justify-center gap-1 dir-ltr text-[11px]">
@@ -338,13 +366,13 @@ function persianDateTimePicker(config) {
             this.isOpen = true;
             this.activeTab = 'date';
             this.calendarView = 'days';
-            this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+            this.yearPageOffset = Math.floor(this.viewYear / 10) * 10;
         },
 
         toggleView(view) {
             this.calendarView = (this.calendarView === view) ? 'days' : view;
             if (view === 'years') {
-                this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+                this.yearPageOffset = Math.floor(this.viewYear / 10) * 10;
             }
         },
 
@@ -358,9 +386,32 @@ function persianDateTimePicker(config) {
             return years;
         },
 
+        get availableDecades() {
+            const decades = [];
+            const minDec = Math.floor(this.minYear / 10) * 10;
+            const maxDec = Math.floor(this.maxYear / 10) * 10;
+            for (let d = maxDec; d >= minDec; d -= 10) {
+                decades.push(d);
+            }
+            return decades;
+        },
+
+        stepDecade(delta) {
+            let next = this.yearPageOffset + delta;
+            const minDec = Math.floor(this.minYear / 10) * 10;
+            const maxDec = Math.floor(this.maxYear / 10) * 10;
+            if (next < minDec) next = minDec;
+            if (next > maxDec) next = maxDec;
+            this.yearPageOffset = next;
+        },
+
+        jumpDecade(targetDecade) {
+            this.yearPageOffset = targetDecade;
+        },
+
         pickYear(y) {
             this.viewYear = y;
-            this.calendarView = 'months';
+            this.calendarView = 'days';
         },
 
         pickMonth(m) {

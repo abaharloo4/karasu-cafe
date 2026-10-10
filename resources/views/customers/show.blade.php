@@ -96,7 +96,15 @@
                 <span>وضعیت اشتراک فعال</span>
             </h3>
             @if($active_subscription)
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">فعال و معتبر</span>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">فعال و معتبر</span>
+                    <a href="{{ route('subscriptions.edit', $active_subscription) }}" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors">ویرایش</a>
+                    <form method="POST" action="{{ route('subscriptions.destroy', $active_subscription) }}" class="inline-block" onsubmit="return confirm('آیا از حذف کامل این اشتراک اطمینان دارید؟');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-colors">حذف اشتراک</button>
+                    </form>
+                </div>
             @endif
         </div>
 

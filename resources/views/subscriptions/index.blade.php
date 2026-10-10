@@ -43,7 +43,16 @@
                             @endforeach
                         </div>
                         @if(auth()->user()->isAdmin())
-                            <a href="{{ route('subscriptions.edit-plan', $plan) }}" class="px-3 py-1.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] text-[#1F2520] font-semibold rounded-lg text-xs">ویرایش پلن</a>
+                            <div class="flex items-center gap-1.5">
+                                <a href="{{ route('subscriptions.edit-plan', $plan) }}" class="px-3 py-1.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] text-[#1F2520] font-semibold rounded-lg text-xs transition-colors">ویرایش</a>
+                                <form method="POST" action="{{ route('subscriptions.destroy-plan', $plan) }}" class="inline-block" onsubmit="return confirm('آیا از حذف کامل پلن «{{ $plan->name }}» اطمینان دارید؟ تمام اشتراک‌های صادرشده این پلن نیز حذف خواهند شد.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="px-3 py-1.5 bg-[#FDF2F2] hover:bg-[#F8B4B4] text-[#C94A4A] font-semibold rounded-lg text-xs transition-colors" title="حذف پلن اشتراک">
+                                        حذف
+                                    </button>
+                                </form>
+                            </div>
                         @endif
                     </div>
                 </div>

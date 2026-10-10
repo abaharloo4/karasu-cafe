@@ -123,6 +123,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/subscriptions/plans/{plan}/edit', [SubscriptionController::class, 'editPlan']);
     Route::put('/admin/subscriptions/plans/{plan}', [SubscriptionController::class, 'updatePlan'])->name('subscriptions.update-plan');
     Route::put('/subscriptions/plans/{plan}', [SubscriptionController::class, 'updatePlan']);
+    Route::delete('/admin/subscriptions/plans/{plan}', [SubscriptionController::class, 'destroyPlan'])->name('subscriptions.destroy-plan');
+    Route::delete('/subscriptions/plans/{plan}', [SubscriptionController::class, 'destroyPlan']);
 
     Route::get('/admin/subscriptions/assign', [SubscriptionController::class, 'assignForm'])->name('subscriptions.assign');
     Route::get('/subscriptions/assign', [SubscriptionController::class, 'assignForm']);

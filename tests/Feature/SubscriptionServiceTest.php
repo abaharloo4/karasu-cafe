@@ -207,4 +207,52 @@ class SubscriptionServiceTest extends TestCase
         $this->assertEquals(90, $effective);
         $this->assertEquals(90, $subscription->fresh()->remaining_items);
     }
+
+    public function test_admin_can_delete_subscription_plan(): void
+    {
+        $admin = User::create([
+            'cafe_id' => $this->cafe->id,
+            'name' => 'ادمین تست',
+            'email' => 'admin_sub@test.local',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+        ]);
+
+        $sub = $this->subscriptionService->createSubscription(
+            $this->cafe->id,
+            $this->customer->id,
+            $this->plan->id
+        );
+
+        $response = $this->actingAs($admin)
+            ->delete(route('subscriptions.destroy-plan', $this->plan));
+
+        $response->assertRedirect(route('subscriptions.index'));
+        $this->assertDatabaseMissing('subscription_plans', ['id' => $this->plan->id]);
+        $this->assertDatabaseMissing('subscriptions', ['id' => $sub->id]);
+    }
+
+    public function test_admin_can_delete_customer_subscription(): void
+    {
+        $admin = User::create([
+            'cafe_id' => $this->cafe->id,
+            'name' => 'ادمین تست ۲',
+            'email' => 'admin_sub2@test.local',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+        ]);
+
+        $sub = $this->subscriptionService->createSubscription(
+            $this->cafe->id,
+            $this->customer->id,
+            $this->plan->id
+        );
+
+        $response = $this->actingAs($admin)
+            ->delete(route('subscriptions.destroy', $sub));
+
+        $response->assertRedirect(route('subscriptions.index'));
+        $this->assertDatabaseMissing('subscriptions', ['id' => $sub->id]);
+    }
 }
+

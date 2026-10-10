@@ -78,40 +78,36 @@
          class="absolute z-50 mt-2 start-0 w-[315px] sm:w-[335px] bg-white border border-[#CBD5E1] rounded-3xl shadow-2xl p-4 text-xs select-none backdrop-blur-md"
          style="display: none;">
 
-        <!-- Calendar Header (Red Spiral / Binder Top Aesthetic) -->
+        <!-- Calendar Header (Month & Year Prominent Selectors) -->
         <div class="bg-[#19242B] text-white p-3 rounded-2xl mb-3 shadow-inner">
             <div class="flex items-center justify-between">
-                <!-- Year Navigation (Fast jump by years) -->
-                <div class="flex items-center gap-1">
-                    <button type="button" @click="changeYear(-1)" title="یک سال عقب"
-                            class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px] font-bold transition-colors">
-                        &laquo;
-                    </button>
-                    <!-- Clickable Year Badge to open Year Selector Grid -->
-                    <button type="button" @click="toggleView('years')"
-                            :class="calendarView === 'years' ? 'bg-[#3C6E71] text-white ring-2 ring-emerald-400/40' : 'bg-white/15 text-white hover:bg-white/25'"
-                            class="px-2.5 py-1 rounded-lg text-xs font-black font-mono tabular-nums transition-all flex items-center gap-1">
-                        <span x-text="viewYear"></span>
-                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <button type="button" @click="changeYear(1)" title="یک سال جلو"
-                            class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-[10px] font-bold transition-colors">
-                        &raquo;
-                    </button>
-                </div>
+                <!-- Year Button (Click to open Year Grid) -->
+                <button type="button"
+                        @click="toggleView('years')"
+                        :class="calendarView === 'years' ? 'bg-[#3C6E71] text-white ring-2 ring-emerald-400/60' : 'bg-white/10 text-white hover:bg-white/20'"
+                        class="px-3 py-1.5 rounded-xl text-xs font-black font-mono tabular-nums transition-all flex items-center gap-1.5 shadow-2xs"
+                        title="انتخاب سال از گرید">
+                    <span class="text-[10px] text-slate-300 font-sans font-normal">سال:</span>
+                    <span x-text="viewYear" class="text-emerald-300"></span>
+                    <svg class="w-3.5 h-3.5 text-emerald-300 transition-transform duration-200" :class="calendarView === 'years' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
 
-                <!-- Month Navigation -->
+                <!-- Month Button (Click to open Month Grid) -->
+                <button type="button"
+                        @click="toggleView('months')"
+                        :class="calendarView === 'months' ? 'bg-[#3C6E71] text-white ring-2 ring-emerald-400/60' : 'bg-white/10 text-white hover:bg-white/20'"
+                        class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-2xs"
+                        title="انتخاب ماه از گرید">
+                    <span class="text-[10px] text-slate-300 font-normal">ماه:</span>
+                    <span x-text="months[viewMonth - 1]" class="text-emerald-300"></span>
+                    <svg class="w-3.5 h-3.5 text-emerald-300 transition-transform duration-200" :class="calendarView === 'months' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <!-- Month Steppers (Next / Prev) -->
                 <div class="flex items-center gap-1">
                     <button type="button" @click="prevMonth()" title="ماه قبل"
                             class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
                         <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
-                    <!-- Clickable Month Badge to open Month Selector Grid -->
-                    <button type="button" @click="toggleView('months')"
-                            :class="calendarView === 'months' ? 'bg-[#3C6E71] text-white ring-2 ring-emerald-400/40' : 'bg-white/15 text-white hover:bg-white/25'"
-                            class="px-3 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1">
-                        <span x-text="months[viewMonth - 1]"></span>
-                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <button type="button" @click="nextMonth()" title="ماه بعد"
                             class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
@@ -158,49 +154,72 @@
             </div>
         </div>
 
-        <!-- 2. FAST YEAR PICKER VIEW (گرید سال‌ها - پرش سریع به دهه‌های گذشته مثل ۱۳۵۰ تا ۱۴۱۰) -->
-        <div x-show="calendarView === 'years'" class="space-y-2 py-1">
-            <div class="flex items-center justify-between text-[11px] font-bold text-[#64748B] px-1">
-                <span>انتخاب سریع سال (از ۱۳۲۰ تا ۱۴۱۰):</span>
-                <div class="flex items-center gap-1 font-mono text-[10px]">
-                    <button type="button" @click="yearPageOffset -= 12" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700">&lt; قبل</button>
-                    <button type="button" @click="yearPageOffset += 12" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700">بعد &gt;</button>
+        <!-- 2. FAST YEAR PICKER VIEW (گرید انتخاب سال - حرکت راحت به عقب تا ۱۳۲۰ و دهه‌های گذشته) -->
+        <div x-show="calendarView === 'years'" class="space-y-3 py-1">
+            <!-- Decade Stepper Header -->
+            <div class="flex items-center justify-between text-xs font-bold text-slate-700 px-1 bg-slate-100 py-1.5 rounded-xl">
+                <button type="button" @click="stepDecade(-10)"
+                        class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-200 text-slate-800 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1">
+                    <span>‹ ۱۰ سال قبل</span>
+                </button>
+                <div class="font-mono text-xs font-black text-[#3C6E71]">
+                    <span x-text="yearPageOffset"></span> تا <span x-text="yearPageOffset + 11"></span>
                 </div>
+                <button type="button" @click="stepDecade(10)"
+                        class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-200 text-slate-800 text-[11px] font-bold shadow-2xs transition-colors flex items-center gap-1">
+                    <span>۱۰ سال بعد ›</span>
+                </button>
             </div>
 
-            <!-- 12-Year Grid for selected window -->
+            <!-- 12-Year Interactive Grid -->
             <div class="grid grid-cols-3 gap-2">
                 <template x-for="y in visibleYearsPage" :key="'yr-' + y">
                     <button type="button"
                             @click="pickYear(y)"
-                            :class="viewYear === y ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200'"
+                            :class="viewYear === y ? 'bg-[#3C6E71] text-white font-black shadow-md ring-2 ring-emerald-300' : 'bg-slate-50 text-slate-800 hover:bg-emerald-50 hover:text-[#3C6E71] border border-slate-200'"
                             class="py-2.5 rounded-xl text-center text-xs font-mono font-bold transition-all tabular-nums">
                         <span x-text="y"></span>
                     </button>
                 </template>
             </div>
 
-            <!-- Quick Decade Buttons -->
-            <div class="pt-2 border-t border-slate-100 flex flex-wrap gap-1 justify-center text-[10px] font-mono">
-                <button type="button" @click="jumpDecade(1350)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۳۵۰</button>
-                <button type="button" @click="jumpDecade(1360)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۳۶۰</button>
-                <button type="button" @click="jumpDecade(1370)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۳۷۰</button>
-                <button type="button" @click="jumpDecade(1380)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۳۸۰</button>
-                <button type="button" @click="jumpDecade(1390)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۳۹۰</button>
-                <button type="button" @click="jumpDecade(1400)" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۴۰۰</button>
-                <button type="button" @click="jumpDecade(1403)" class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 hover:bg-[#3C6E71] hover:text-white font-bold transition-colors">۱۴۰۳</button>
+            <!-- Fast Decade Quick Jump Pills -->
+            <div class="pt-2 border-t border-slate-100">
+                <span class="text-[10px] text-slate-400 font-bold block mb-1.5">پرش مستقیم به دهه مورد نظر:</span>
+                <div class="flex flex-wrap gap-1 justify-center text-[11px] font-mono font-bold">
+                    <template x-for="dec in availableDecades" :key="'dec-' + dec">
+                        <button type="button"
+                                @click="jumpDecade(dec)"
+                                :class="yearPageOffset === dec ? 'bg-[#3C6E71] text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                                class="px-2 py-1 rounded-lg transition-colors tabular-nums">
+                            <span x-text="dec"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="pt-1 text-center">
+                <button type="button" @click="calendarView = 'days'" class="text-[11px] text-[#3C6E71] hover:underline font-bold">
+                    بازگشت به تقویم روزها
+                </button>
             </div>
         </div>
 
-        <!-- 3. FAST MONTH PICKER VIEW (گرید ۱۲ ماه سال) -->
-        <div x-show="calendarView === 'months'" class="py-1">
-            <span class="text-[11px] font-bold text-[#64748B] block mb-2 px-1">انتخاب ماه سال:</span>
+        <!-- 3. FAST MONTH PICKER VIEW (گرید ۱۲ ماه سال با یک کلیک) -->
+        <div x-show="calendarView === 'months'" class="py-1 space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-700 px-1 bg-slate-100 py-1.5 rounded-xl">
+                <span>انتخاب ماه سال (<span class="font-mono text-[#3C6E71]" x-text="viewYear"></span>):</span>
+                <button type="button" @click="calendarView = 'days'" class="text-[11px] text-[#3C6E71] hover:underline font-bold">
+                    انصراف
+                </button>
+            </div>
+
             <div class="grid grid-cols-3 gap-2">
                 <template x-for="(mName, mIdx) in months" :key="'mo-' + mIdx">
                     <button type="button"
                             @click="pickMonth(mIdx + 1)"
-                            :class="viewMonth === (mIdx + 1) ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-50 text-slate-800 hover:bg-slate-100 border border-slate-200'"
-                            class="py-2.5 rounded-xl text-center text-xs font-bold transition-all">
+                            :class="viewMonth === (mIdx + 1) ? 'bg-[#3C6E71] text-white font-black shadow-md ring-2 ring-emerald-300' : 'bg-slate-50 text-slate-800 hover:bg-emerald-50 hover:text-[#3C6E71] border border-slate-200 font-semibold'"
+                            class="py-3 rounded-xl text-center text-xs transition-all">
                         <span x-text="mName"></span>
                     </button>
                 </template>
@@ -280,7 +299,7 @@ function persianDatePicker(config) {
                 this.viewYear = this.selectedYear;
                 this.viewMonth = this.selectedMonth;
             }
-            this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+            this.yearPageOffset = Math.floor(this.viewYear / 10) * 10;
         },
 
         toggleView(view) {
@@ -289,7 +308,7 @@ function persianDatePicker(config) {
             } else {
                 this.calendarView = view;
                 if (view === 'years') {
-                    this.yearPageOffset = Math.floor(this.viewYear / 12) * 12;
+                    this.yearPageOffset = Math.floor(this.viewYear / 10) * 10;
                 }
             }
         },
@@ -306,15 +325,32 @@ function persianDatePicker(config) {
             return years;
         },
 
-        jumpDecade(targetYear) {
-            this.viewYear = targetYear;
-            this.yearPageOffset = Math.floor(targetYear / 12) * 12;
-            this.calendarView = 'days';
+        get availableDecades() {
+            const decades = [];
+            const minDec = Math.floor(this.minYear / 10) * 10;
+            const maxDec = Math.floor(this.maxYear / 10) * 10;
+            for (let d = maxDec; d >= minDec; d -= 10) {
+                decades.push(d);
+            }
+            return decades;
+        },
+
+        stepDecade(delta) {
+            let next = this.yearPageOffset + delta;
+            const minDec = Math.floor(this.minYear / 10) * 10;
+            const maxDec = Math.floor(this.maxYear / 10) * 10;
+            if (next < minDec) next = minDec;
+            if (next > maxDec) next = maxDec;
+            this.yearPageOffset = next;
+        },
+
+        jumpDecade(targetDecade) {
+            this.yearPageOffset = targetDecade;
         },
 
         pickYear(y) {
             this.viewYear = y;
-            this.calendarView = 'months'; // Flow: Pick year -> pick month -> pick day!
+            this.calendarView = 'days';
         },
 
         pickMonth(m) {

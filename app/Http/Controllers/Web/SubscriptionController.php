@@ -219,14 +219,36 @@ class SubscriptionController extends Controller
 
     public function destroy(Subscription $subscription)
     {
+        $this->authorize('delete', $subscription);
+
         if ($subscription->cafe_id !== (auth()->user()->cafe_id ?? 1)) {
             abort(403);
         }
 
+        $subscription->usages()->delete();
         $subscription->delete();
 
         return redirect()->route('subscriptions.index')
             ->with('success', 'اشتراک مشتری با موفقیت حذف گردید.');
+    }
+
+    public function destroyPlan(SubscriptionPlan $plan)
+    {
+        $this->authorize('delete', $plan);
+
+        if ($plan->cafe_id !== (auth()->user()->cafe_id ?? 1)) {
+            abort(403);
+        }
+
+        $plan->products()->detach();
+        foreach ($plan->subscriptions as $sub) {
+            $sub->usages()->delete();
+            $sub->delete();
+        }
+        $plan->delete();
+
+        return redirect()->route('subscriptions.index')
+            ->with('success', "پلن اشتراک «{$plan->name}» با موفقیت حذف شد.");
     }
 
     /**

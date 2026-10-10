@@ -54,10 +54,20 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#E7ECE4]">
-            <a href="{{ route('subscriptions.index') }}" class="px-5 py-2.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] text-[#48504B] font-semibold rounded-xl text-xs transition-all">انصراف</a>
-            <button type="submit" class="px-6 py-2.5 bg-[#3A5232] hover:bg-[#2F4428] text-white font-bold rounded-xl text-xs transition-all shadow-md">به‌روزرسانی پلن</button>
+        <div class="flex items-center justify-between pt-4 border-t border-[#E7ECE4]">
+            <button type="button" onclick="if(confirm('آیا از حذف کامل این پلن اشتراک اطمینان دارید؟ تمام اشتراک‌های صادرشده مرتبط با این پلن نیز حذف خواهند شد.')) document.getElementById('delete-plan-form').submit();" class="px-4 py-2.5 bg-[#FDF2F2] hover:bg-[#F8B4B4] text-[#C94A4A] font-bold rounded-xl text-xs transition-all flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>حذف این پلن</span>
+            </button>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('subscriptions.index') }}" class="px-5 py-2.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] text-[#48504B] font-semibold rounded-xl text-xs transition-all">انصراف</a>
+                <button type="submit" class="px-6 py-2.5 bg-[#3A5232] hover:bg-[#2F4428] text-white font-bold rounded-xl text-xs transition-all shadow-md">به‌روزرسانی پلن</button>
+            </div>
         </div>
+    </form>
+    <form id="delete-plan-form" method="POST" action="{{ route('subscriptions.destroy-plan', $plan) }}" class="hidden">
+        @csrf
+        @method('DELETE')
     </form>
 </div>
 @endsection
