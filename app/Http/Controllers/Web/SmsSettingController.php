@@ -202,7 +202,12 @@ class SmsSettingController extends Controller
                 return back()->with('success', $msg);
             }
 
-            return back()->with('error', 'ارسال پیامک با خطا مواجه شد. لطفاً نام‌کاربری و رمز عبور سامانه پیامک را بررسی فرمایید.');
+            $detailError = method_exists($smsGateway, 'getLastError') ? $smsGateway->getLastError() : null;
+            $errorMsg = $detailError
+                ? "ارسال پیامک با خطا مواجه شد: {$detailError}"
+                : 'ارسال پیامک با خطا مواجه شد. لطفاً نام‌کاربری، رمز عبور یا وضعیت خط پنل پیامک را بررسی فرمایید.';
+
+            return back()->with('error', $errorMsg);
         } catch (\Throwable $e) {
             return back()->with('error', 'خطا در برقراری ارتباط با پنل پیامک: ' . $e->getMessage());
         }
