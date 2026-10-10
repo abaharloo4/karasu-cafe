@@ -74,16 +74,12 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label class="block text-xs font-bold text-[#19242B] mb-1.5">ساعت شروع سفارش‌گیری (مثال: 08:00) <span class="text-rose-500">*</span></label>
-                    <input type="text" name="order_start_time" value="{{ old('order_start_time', substr($cafe->order_start_time ?? '08:00', 0, 5)) }}" required dir="ltr" placeholder="08:00"
-                           class="w-full px-4 py-3 rounded-xl bg-white border border-[#CBD5E1] text-[#19242B] text-sm font-mono text-center focus:outline-none focus:border-[#387780] focus:ring-1 focus:ring-[#387780]">
-                    <span class="text-[11px] text-[#64748B] block mt-1">فرمت ۲۴ ساعته (HH:mm)</span>
+                    <x-persian-time-picker name="order_start_time" :value="old('order_start_time', substr($cafe->order_start_time ?? '08:00', 0, 5))" label="ساعت شروع سفارش‌گیری *" placeholder="انتخاب ساعت شروع (مثال: 08:00)..." :required="true" />
+                    <span class="text-[11px] text-[#64748B] block mt-1">فرمت ۲۴ ساعته ویژوال (HH:mm)</span>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-[#19242B] mb-1.5">ساعت پایان سفارش‌گیری (مثال: 22:00) <span class="text-rose-500">*</span></label>
-                    <input type="text" name="order_end_time" value="{{ old('order_end_time', substr($cafe->order_end_time ?? '22:00', 0, 5)) }}" required dir="ltr" placeholder="22:00"
-                           class="w-full px-4 py-3 rounded-xl bg-white border border-[#CBD5E1] text-[#19242B] text-sm font-mono text-center focus:outline-none focus:border-[#387780] focus:ring-1 focus:ring-[#387780]">
+                    <x-persian-time-picker name="order_end_time" :value="old('order_end_time', substr($cafe->order_end_time ?? '22:00', 0, 5))" label="ساعت پایان سفارش‌گیری *" placeholder="انتخاب ساعت پایان (مثال: 22:00)..." :required="true" />
                     <span class="text-[11px] text-[#64748B] block mt-1">سفارش‌های بعد از این ساعت به شیفت بعدی منتقل می‌شوند.</span>
                 </div>
             </div>

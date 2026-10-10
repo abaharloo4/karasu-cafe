@@ -358,19 +358,15 @@
                     <div>
                         <label class="block text-[11px] font-bold text-[#353535] mb-1">درصد تخفیف (٪): *</label>
                         <input type="number" name="discount_percent" value="{{ old('discount_percent', $product->discount_percent ?: 15) }}" min="1" max="99" placeholder="مثلاً: 20"
-                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-black text-rose-600 tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-black text-rose-600 tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none min-h-[44px]">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-[#353535] mb-1">ساعت شروع تخفیف:</label>
-                        <input type="time" name="discount_start_time" value="{{ old('discount_start_time', $product->discount_start_time) }}"
-                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-bold text-[#353535] tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
-                        <span class="text-[10px] text-[#353535]/50">خالی = از ابتدای روز</span>
+                        <x-persian-time-picker name="discount_start_time" :value="old('discount_start_time', $product->discount_start_time)" label="ساعت شروع تخفیف:" placeholder="از ابتدای روز (یا انتخاب ساعت)..." />
+                        <span class="text-[10px] text-[#353535]/50 block mt-1">خالی = از ابتدای روز (۲۴ ساعته)</span>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-[#353535] mb-1">ساعت پایان تخفیف:</label>
-                        <input type="time" name="discount_end_time" value="{{ old('discount_end_time', $product->discount_end_time) }}"
-                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-bold text-[#353535] tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
-                        <span class="text-[10px] text-[#353535]/50">خالی = تا انتهای روز</span>
+                        <x-persian-time-picker name="discount_end_time" :value="old('discount_end_time', $product->discount_end_time)" label="ساعت پایان تخفیف:" placeholder="تا انتهای روز (یا انتخاب ساعت)..." />
+                        <span class="text-[10px] text-[#353535]/50 block mt-1">خالی = تا انتهای روز (۲۴ ساعته)</span>
                     </div>
                 </div>
 

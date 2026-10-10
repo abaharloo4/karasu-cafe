@@ -142,16 +142,12 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs font-black text-[#353535] mb-1.5">تاریخ شروع اعتبار</label>
-                    <input type="datetime-local" name="starts_at" value="{{ old('starts_at', $coupon->starts_at ? $coupon->starts_at->format('Y-m-d\TH:i') : '') }}"
-                           class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-bold text-[#353535] focus:outline-none focus:border-[#3C6E71] focus:bg-white dir-ltr">
+                    <x-persian-datetime-picker name="starts_at" :value="old('starts_at', $coupon->starts_at ? $coupon->starts_at->format('Y-m-d\TH:i') : '')" label="تاریخ و ساعت شروع اعتبار" placeholder="انتخاب تاریخ تقویم و ساعت..." />
                     @error('starts_at') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-black text-[#353535] mb-1.5">تاریخ انقضا</label>
-                    <input type="datetime-local" name="expires_at" value="{{ old('expires_at', $coupon->expires_at ? $coupon->expires_at->format('Y-m-d\TH:i') : '') }}"
-                           class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-bold text-[#353535] focus:outline-none focus:border-[#3C6E71] focus:bg-white dir-ltr">
+                    <x-persian-datetime-picker name="expires_at" :value="old('expires_at', $coupon->expires_at ? $coupon->expires_at->format('Y-m-d\TH:i') : '')" label="تاریخ و ساعت انقضا" placeholder="انتخاب تاریخ تقویم و ساعت..." />
                     @error('expires_at') <p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
