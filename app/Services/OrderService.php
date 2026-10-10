@@ -33,14 +33,15 @@ class OrderService
             foreach ($items as $item) {
                 $product = Product::where('cafe_id', $cafeId)->findOrFail($item['product_id']);
                 $quantity = max(1, (int) $item['quantity']);
-                $linePrice = $product->price * $quantity;
+                $unitPrice = (float) $product->effective_price;
+                $linePrice = $unitPrice * $quantity;
                 $totalPrice += $linePrice;
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'quantity' => $quantity,
-                    'price' => $product->price,
+                    'price' => $unitPrice,
                 ]);
             }
 

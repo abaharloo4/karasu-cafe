@@ -7,8 +7,9 @@
     <title>{{ config('app.name', 'بی کافه') }} - @yield('title', 'پنل مدیریت')</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-    <link rel="alternate icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}?v=2.0.2">
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
     @include('partials.pwa-meta', ['pwaPanel' => 'admin'])
 

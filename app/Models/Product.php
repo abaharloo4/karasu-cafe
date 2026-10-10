@@ -30,6 +30,7 @@ class Product extends Model
         'discount_percent',
         'discount_start_time',
         'discount_end_time',
+        'discount_days',
         'is_hourly_discount_active',
     ];
 
@@ -39,11 +40,12 @@ class Product extends Model
         'prep_time' => 'integer',
         'addons' => 'array',
         'discount_percent' => 'integer',
+        'discount_days' => 'array',
         'is_hourly_discount_active' => 'boolean',
     ];
 
     /**
-     * Check whether an hourly discount is currently active based on current time in Tehran/Shiraz.
+     * Check whether an hourly discount is currently active based on current day and time in Tehran/Shiraz.
      */
     public function isHourlyDiscountActive(): bool
     {
@@ -51,11 +53,27 @@ class Product extends Model
             return false;
         }
 
+        $tehranNow = now()->setTimezone('Asia/Tehran');
+
+        // Check configured days of week if specified
+        if (!empty($this->discount_days) && is_array($this->discount_days)) {
+            $allowedDays = array_map('strtolower', array_map('strval', $this->discount_days));
+            $currentDayCode = strtolower($tehranNow->format('D')); // e.g. 'sat', 'sun'
+            $currentDayFull = strtolower($tehranNow->format('l')); // e.g. 'saturday'
+            $currentDayNum = (string) $tehranNow->dayOfWeek; // 0 (Sun) to 6 (Sat)
+
+            if (!in_array($currentDayCode, $allowedDays) &&
+                !in_array($currentDayFull, $allowedDays) &&
+                !in_array($currentDayNum, $allowedDays)) {
+                return false;
+            }
+        }
+
         if (empty($this->discount_start_time) || empty($this->discount_end_time) || $this->discount_start_time === $this->discount_end_time || ($this->discount_start_time === '00:00' && $this->discount_end_time === '23:59')) {
             return true;
         }
 
-        $now = now()->setTimezone('Asia/Tehran')->format('H:i');
+        $now = $tehranNow->format('H:i');
         $start = $this->discount_start_time;
         $end = $this->discount_end_time;
 

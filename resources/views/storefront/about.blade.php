@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>درباره ما - کافه تخصصی بی کافه (B Cafe) شیراز</title>
 
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
-    <link rel="shortcut icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}?v=2.0.2">
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
     <!-- Leaflet CSS for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>

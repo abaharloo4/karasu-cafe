@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'بی کافه') }} - @yield('title', 'پنل مشتریان')</title>
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-    <link rel="alternate icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}?v=2.0.2">
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
     @include('partials.pwa-meta', ['pwaPanel' => 'customer'])
 
@@ -36,6 +37,12 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
+                <a href="{{ route('dashboard') }}" class="px-2.5 py-1.5 bg-[#3C6E71] hover:bg-[#284B63] text-white rounded-xl text-[11px] font-black btn-tactile flex items-center gap-1 shadow-2xs transition-colors">
+                    <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>پنل مدیریت</span>
+                </a>
+            @endif
             <a href="{{ route('storefront.menu') }}" class="px-2.5 py-1.5 bg-[#284B63] text-white rounded-xl text-[11px] font-bold btn-tactile flex items-center gap-1 shadow-2xs">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
                 <span>سفارش</span>

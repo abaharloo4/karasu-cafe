@@ -6,8 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>منوی آنلاین و اشتراک‌های بی کافه (B Cafe) - شیراز</title>
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-    <link rel="alternate icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}?v=2.0.2">
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
     @include('partials.pwa-meta', ['pwaPanel' => 'customer'])
 
@@ -62,7 +63,12 @@
                     <span class="px-1.5 py-0.5 rounded-full bg-[#353535] text-[#F7F9FA] text-[11px] font-mono tabular-nums" x-text="cartTotalCount"></span>
                 </a>
 
-                @if($customer ?? false)
+                @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
+                    <a href="{{ route('dashboard') }}" class="hidden sm:flex px-4 py-2.5 bg-[#3C6E71] text-white hover:bg-[#284B63] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 items-center gap-2 shadow-xs transition-colors min-h-[44px]">
+                        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span>پنل مدیریت کافه</span>
+                    </a>
+                @elseif($customer ?? false)
                     <a href="{{ route('customer.dashboard') }}" class="hidden sm:flex px-4 py-2.5 bg-[#3C6E71]/15 text-[#353535] hover:bg-[#3C6E71] hover:text-[#F7F9FA] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 items-center gap-2 shadow-xs transition-colors min-h-[44px]">
                         <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         <span>پنل من ({{ $customer->name }})</span>
@@ -148,7 +154,12 @@
                         <span class="px-2 py-0.5 rounded-full bg-[#353535] text-[#F7F9FA] text-[11px] font-mono tabular-nums" x-text="cartTotalCount"></span>
                     </a>
 
-                    @if($customer ?? false)
+                    @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
+                        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-[#3C6E71] text-white font-black text-xs shadow-xs">
+                            <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>ورود به پنل مدیریت کافه</span>
+                        </a>
+                    @elseif($customer ?? false)
                         <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-[#3C6E71]/15 text-[#353535] font-black text-xs">
                             <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             <span>داشبورد من ({{ $customer->name }})</span>
@@ -852,7 +863,14 @@
                     let rem = Number(product.discount_remaining_seconds);
                     const updateModalTime = () => {
                         if (rem <= 0) {
-                            this.modalCountdownFormatted = 'پایان زمان تخفیف';
+                            this.modalCountdownFormatted = '';
+                            if (this.modalProduct) {
+                                this.modalProduct.has_discount = false;
+                                if (this.modalProduct.original_price) {
+                                    this.modalProduct.price = this.modalProduct.original_price;
+                                    this.modalProduct.original_price = null;
+                                }
+                            }
                             clearInterval(this.modalTimerInterval);
                             return;
                         }

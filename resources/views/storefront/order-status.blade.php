@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>وضعیت سفارش {{ $order->order_number }} - بی کافه</title>
 
-    <link rel="icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
-    <link rel="shortcut icon" type="image/jpeg" href="{{ asset('images/logo.jpeg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}?v=2.0.2">
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
+    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

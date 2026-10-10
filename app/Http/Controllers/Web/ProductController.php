@@ -59,6 +59,8 @@ class ProductController extends Controller
             'discount_percent' => 'nullable|integer|min:0|max:99',
             'discount_start_time' => 'nullable|string|max:5',
             'discount_end_time' => 'nullable|string|max:5',
+            'discount_days' => 'nullable|array',
+            'discount_days.*' => 'string|in:sat,sun,mon,tue,wed,thu,fri',
             'is_hourly_discount_active' => 'nullable|boolean',
         ]);
 
@@ -107,6 +109,7 @@ class ProductController extends Controller
             'discount_percent' => (int) ($validated['discount_percent'] ?? 0),
             'discount_start_time' => $validated['discount_start_time'] ?? null,
             'discount_end_time' => $validated['discount_end_time'] ?? null,
+            'discount_days' => $request->input('discount_days'),
             'is_hourly_discount_active' => $request->boolean('is_hourly_discount_active'),
         ]);
 
@@ -148,6 +151,8 @@ class ProductController extends Controller
             'discount_percent' => 'nullable|integer|min:0|max:99',
             'discount_start_time' => 'nullable|string|max:5',
             'discount_end_time' => 'nullable|string|max:5',
+            'discount_days' => 'nullable|array',
+            'discount_days.*' => 'string|in:sat,sun,mon,tue,wed,thu,fri',
             'is_hourly_discount_active' => 'nullable|boolean',
         ]);
 
@@ -217,6 +222,7 @@ class ProductController extends Controller
             'discount_percent' => (int) ($validated['discount_percent'] ?? 0),
             'discount_start_time' => $validated['discount_start_time'] ?? null,
             'discount_end_time' => $validated['discount_end_time'] ?? null,
+            'discount_days' => $request->input('discount_days'),
             'is_hourly_discount_active' => $request->boolean('is_hourly_discount_active'),
         ]);
 

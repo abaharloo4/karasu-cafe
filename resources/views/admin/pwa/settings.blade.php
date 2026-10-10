@@ -90,20 +90,20 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">رنگ تم (Theme Color - نوار بالای مرورگر)</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" name="theme_color" value="{{ old('theme_color', $customerSetting->theme_color) }}"
+                    <div class="flex items-center gap-2" x-data="{ cColor: '{{ old('theme_color', $customerSetting->theme_color ?? '#387780') }}' }">
+                        <input type="color" name="theme_color" x-model="cColor"
                                class="w-10 h-10 p-1 rounded-xl border border-slate-200 cursor-pointer bg-slate-50">
-                        <input type="text" value="{{ old('theme_color', $customerSetting->theme_color) }}" readonly
+                        <input type="text" x-model="cColor"
                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">رنگ پس‌زمینه اسپلش (Background Color)</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" name="background_color" value="{{ old('background_color', $customerSetting->background_color) }}"
+                    <div class="flex items-center gap-2" x-data="{ cBg: '{{ old('background_color', $customerSetting->background_color ?? '#0F172A') }}' }">
+                        <input type="color" name="background_color" x-model="cBg"
                                class="w-10 h-10 p-1 rounded-xl border border-slate-200 cursor-pointer bg-slate-50">
-                        <input type="text" value="{{ old('background_color', $customerSetting->background_color) }}" readonly
+                        <input type="text" x-model="cBg"
                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
                     </div>
                 </div>
@@ -189,20 +189,20 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">رنگ تم (Theme Color)</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" name="theme_color" value="{{ old('theme_color', $adminSetting->theme_color) }}"
+                    <div class="flex items-center gap-2" x-data="{ aColor: '{{ old('theme_color', $adminSetting->theme_color ?? '#141D22') }}' }">
+                        <input type="color" name="theme_color" x-model="aColor"
                                class="w-10 h-10 p-1 rounded-xl border border-slate-200 cursor-pointer bg-slate-50">
-                        <input type="text" value="{{ old('theme_color', $adminSetting->theme_color) }}" readonly
+                        <input type="text" x-model="aColor"
                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5">رنگ پس‌زمینه اسپلش</label>
-                    <div class="flex items-center gap-2">
-                        <input type="color" name="background_color" value="{{ old('background_color', $adminSetting->background_color) }}"
+                    <div class="flex items-center gap-2" x-data="{ aBg: '{{ old('background_color', $adminSetting->background_color ?? '#0F172A') }}' }">
+                        <input type="color" name="background_color" x-model="aBg"
                                class="w-10 h-10 p-1 rounded-xl border border-slate-200 cursor-pointer bg-slate-50">
-                        <input type="text" value="{{ old('background_color', $adminSetting->background_color) }}" readonly
+                        <input type="text" x-model="aBg"
                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
                     </div>
                 </div>

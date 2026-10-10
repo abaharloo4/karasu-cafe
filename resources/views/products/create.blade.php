@@ -283,49 +283,115 @@
                         هنوز هیچ افزودنی برای این محصول تعریف نشده است. با کلیک بر روی دکمه یا پیش‌فرض‌های بالا افزودنی اضافه کنید.
                     </div>
                 </template>
-        <!-- Hourly / All-Day Discount Configuration -->
-        <div x-data="{ discountActive: {{ old('is_hourly_discount_active') ? 'true' : 'false' }} }"
-             class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/5 via-rose-500/5 to-transparent border border-amber-500/20 space-y-4">
-            <div class="flex items-center justify-between">
+        <!-- Hourly & Scheduled Days Discount Configuration (VibeFarsi Design) -->
+        @php
+            $initialDiscountDays = old('discount_days', ['sat','sun','mon','tue','wed','thu','fri']);
+            if (empty($initialDiscountDays)) {
+                $initialDiscountDays = ['sat','sun','mon','tue','wed','thu','fri'];
+            }
+        @endphp
+        <div x-data="{
+            discountActive: {{ old('is_hourly_discount_active') ? 'true' : 'false' }},
+            selectedDays: {{ json_encode($initialDiscountDays) }},
+            daysList: [
+                { key: 'sat', label: 'شنبه' },
+                { key: 'sun', label: 'یکشنبه' },
+                { key: 'mon', label: 'دوشنبه' },
+                { key: 'tue', label: 'سه‌شنبه' },
+                { key: 'wed', label: 'چهارشنبه' },
+                { key: 'thu', label: 'پنج‌شنبه' },
+                { key: 'fri', label: 'جمعه' }
+            ],
+            toggleDay(dayKey) {
+                if (this.selectedDays.includes(dayKey)) {
+                    if (this.selectedDays.length > 1) {
+                        this.selectedDays = this.selectedDays.filter(d => d !== dayKey);
+                    }
+                } else {
+                    this.selectedDays.push(dayKey);
+                }
+            },
+            selectAllDays() {
+                this.selectedDays = ['sat','sun','mon','tue','wed','thu','fri'];
+            },
+            selectWorkDays() {
+                this.selectedDays = ['sat','sun','mon','tue','wed'];
+            },
+            selectWeekend() {
+                this.selectedDays = ['thu','fri'];
+            }
+        }" class="p-4 sm:p-5 rounded-2xl bg-white border border-[#353535]/15 space-y-4 shadow-xs">
+            <div class="flex items-center justify-between border-b border-[#353535]/10 pb-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div class="w-9 h-9 rounded-xl bg-[#3C6E71]/15 text-[#3C6E71] flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-xs font-black text-[#19242B]">تخفیف روی محصول (تمام‌وقت یا بازه ساعتی)</h3>
-                        <p class="text-[11px] text-slate-500">اعمال درصد تخفیف به صورت ساعتی (Happy Hour) یا ۲۴ ساعته با نمایش به کاربر</p>
+                        <h3 class="text-xs sm:text-sm font-black text-[#19242B]">تنظیم روزها و ساعات تخفیف محصول</h3>
+                        <p class="text-[11px] text-[#353535]/65">اعمال تخفیف زمان‌دار (روزهای هفته + ساعات شروع و پایان) با حذف خودکار کارت پس از انقضا</p>
                     </div>
                 </div>
 
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="is_hourly_discount_active" value="1" x-model="discountActive" class="sr-only peer">
-                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#3C6E71]"></div>
                 </label>
             </div>
 
-            <div x-show="discountActive" x-transition class="space-y-3 pt-2 border-t border-amber-500/15">
+            <div x-show="discountActive" x-transition class="space-y-4 pt-1">
+                <!-- Percent and Hours Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">درصد تخفیف (٪):</label>
-                        <input type="number" name="discount_percent" value="{{ old('discount_percent', 15) }}" min="1" max="90" placeholder="مثلاً: 20"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black text-rose-600 tabular-nums focus:border-amber-500 focus:outline-none">
+                        <label class="block text-[11px] font-bold text-[#353535] mb-1">درصد تخفیف (٪): *</label>
+                        <input type="number" name="discount_percent" value="{{ old('discount_percent', 15) }}" min="1" max="99" placeholder="مثلاً: 20"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-black text-rose-600 tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">ساعت شروع تخفیف:</label>
+                        <label class="block text-[11px] font-bold text-[#353535] mb-1">ساعت شروع تخفیف:</label>
                         <input type="time" name="discount_start_time" value="{{ old('discount_start_time') }}"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 tabular-nums focus:border-amber-500 focus:outline-none">
-                        <span class="text-[10px] text-slate-400">خالی = تمام روز</span>
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-bold text-[#353535] tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
+                        <span class="text-[10px] text-[#353535]/50">خالی = از ابتدای روز</span>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">ساعت پایان تخفیف:</label>
+                        <label class="block text-[11px] font-bold text-[#353535] mb-1">ساعت پایان تخفیف:</label>
                         <input type="time" name="discount_end_time" value="{{ old('discount_end_time') }}"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 tabular-nums focus:border-amber-500 focus:outline-none">
-                        <span class="text-[10px] text-slate-400">خالی = تمام روز</span>
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 text-xs font-bold text-[#353535] tabular-nums focus:bg-white focus:border-[#3C6E71] focus:outline-none">
+                        <span class="text-[10px] text-[#353535]/50">خالی = تا انتهای روز</span>
                     </div>
                 </div>
-                <p class="text-[11px] text-amber-800 bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60 leading-relaxed">
-                    ✨ <strong>نکته:</strong> اگر ساعت شروع و پایان را خالی بگذارید، تخفیف به صورت دائمی (۲۴ ساعته) اعمال خواهد شد. اگر ساعت تعیین کنید، تخفیف در همان بازه فعال شده و ثانیه‌شمار مهلت باقی‌مانده در منو به مشتری نمایش داده می‌شود.
-                </p>
+
+                <!-- Days of Week Selector (VibeFarsi Design) -->
+                <div class="bg-[#F7F9FA]/70 p-3.5 rounded-xl border border-[#353535]/10 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-[11px] font-bold text-[#19242B]">روزهای فعال بودن تخفیف:</span>
+                        <div class="flex items-center gap-1.5 text-[10px]">
+                            <button type="button" @click="selectAllDays()" class="px-2 py-0.5 rounded-lg bg-white border border-[#353535]/15 hover:bg-[#3C6E71]/15 text-[#353535] font-bold transition-colors">همه روزها</button>
+                            <button type="button" @click="selectWorkDays()" class="px-2 py-0.5 rounded-lg bg-white border border-[#353535]/15 hover:bg-[#3C6E71]/15 text-[#353535] font-bold transition-colors">شنبه تا چهارشنبه</button>
+                            <button type="button" @click="selectWeekend()" class="px-2 py-0.5 rounded-lg bg-white border border-[#353535]/15 hover:bg-[#3C6E71]/15 text-[#353535] font-bold transition-colors">آخر هفته (پنج‌شنبه و جمعه)</button>
+                        </div>
+                    </div>
+
+                    <!-- Days Pills -->
+                    <div class="grid grid-cols-2 sm:grid-cols-7 gap-1.5 pt-1">
+                        <template x-for="d in daysList" :key="d.key">
+                            <label class="relative flex items-center justify-center p-2 rounded-xl border text-xs font-black cursor-pointer transition-all select-none text-center"
+                                   :class="selectedDays.includes(d.key) ? 'bg-[#3C6E71] text-white border-[#3C6E71] shadow-2xs' : 'bg-white text-[#353535]/70 border-[#353535]/15 hover:bg-slate-50'">
+                                <input type="checkbox" name="discount_days[]" :value="d.key" :checked="selectedDays.includes(d.key)" @change="toggleDay(d.key)" class="sr-only">
+                                <span class="flex items-center justify-center gap-1">
+                                    <template x-if="selectedDays.includes(d.key)">
+                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    </template>
+                                    <span x-text="d.label"></span>
+                                </span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span><strong>توجه:</strong> تخفیف فقط در روزها و ساعات مشخص‌شده فعال می‌شود. به محض اتمام بازه تخفیف، تمام نشان‌ها، درصد و قیمت خط‌خورده به صورت خودکار از کارت محصول پاک می‌شوند و قیمت عادی اعمال می‌گردد.</span>
+                </div>
             </div>
         </div>
 

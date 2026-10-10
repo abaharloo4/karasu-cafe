@@ -72,6 +72,56 @@ class SubscriptionCartAndHourlyDiscountTest extends TestCase
         $this->assertEquals(80000, $product->effective_price);
     }
 
+    public function test_hourly_discount_respects_discount_days(): void
+    {
+        $currentDay = strtolower(now()->timezone('Asia/Tehran')->format('D'));
+        $dayMap = [
+            'sat' => 'sat',
+            'sun' => 'sun',
+            'mon' => 'mon',
+            'tue' => 'tue',
+            'wed' => 'wed',
+            'thu' => 'thu',
+            'fri' => 'fri',
+        ];
+        $todayKey = $dayMap[$currentDay] ?? 'sat';
+        $otherDayKey = $todayKey === 'sat' ? 'sun' : 'sat';
+
+        // Product matching today
+        $productActiveToday = Product::create([
+            'cafe_id' => $this->cafe->id,
+            'category_id' => $this->category->id,
+            'name' => 'قهوه تخفیف‌دار امروز',
+            'price' => 100000,
+            'status' => 'active',
+            'discount_percent' => 30,
+            'discount_start_time' => '00:00',
+            'discount_end_time' => '23:59',
+            'discount_days' => [$todayKey],
+            'is_hourly_discount_active' => true,
+        ]);
+
+        $this->assertTrue($productActiveToday->isHourlyDiscountActive());
+        $this->assertEquals(70000, $productActiveToday->effective_price);
+
+        // Product with discount only on other day
+        $productOtherDay = Product::create([
+            'cafe_id' => $this->cafe->id,
+            'category_id' => $this->category->id,
+            'name' => 'قهوه تخفیف‌دار روز دیگر',
+            'price' => 100000,
+            'status' => 'active',
+            'discount_percent' => 30,
+            'discount_start_time' => '00:00',
+            'discount_end_time' => '23:59',
+            'discount_days' => [$otherDayKey],
+            'is_hourly_discount_active' => true,
+        ]);
+
+        $this->assertFalse($productOtherDay->isHourlyDiscountActive());
+        $this->assertEquals(100000, $productOtherDay->effective_price);
+    }
+
     public function test_hourly_discount_inactive_when_flag_false(): void
     {
         $product = Product::create([

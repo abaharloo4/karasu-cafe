@@ -21,25 +21,30 @@ class PwaController extends Controller
      */
     public function manifest(Request $request): Response
     {
-        // Unified PWA across customer and admin
-        $setting = PwaSetting::where('panel', 'customer')->first() ?? PwaSetting::forPanel('customer');
+        $panel = $request->route('panel', 'customer');
+        if (!in_array($panel, ['customer', 'admin'])) {
+            $panel = 'customer';
+        }
+
+        // Fetch settings for requested panel with customer default
+        $setting = PwaSetting::forPanel($panel);
 
         $icon192 = $setting->icon_192 ?: asset('icons/icon-192x192.png');
         $icon512 = $setting->icon_512 ?: asset('icons/icon-512x512.png');
         $iconMaskable = $setting->icon_maskable ?: asset('icons/icon-512x512.png');
 
         $manifestData = [
-            'name' => 'بی کافه (B Cafe) - شیراز',
-            'short_name' => 'بی کافه',
+            'name' => $setting->app_name ?: 'بی کافه (B Cafe) - شیراز',
+            'short_name' => $setting->short_name ?: 'بی کافه',
             'description' => 'سامانه کافه، سفارش آنلاین و قهوه تخصصی بی کافه',
-            'start_url' => '/',
-            'scope' => '/',
+            'start_url' => $setting->start_url ?: '/',
+            'scope' => $setting->scope ?: '/',
             'display' => 'standalone',
             'orientation' => 'portrait',
             'dir' => 'rtl',
             'lang' => 'fa',
-            'theme_color' => $setting->theme_color,
-            'background_color' => $setting->background_color,
+            'theme_color' => $setting->theme_color ?: '#387780',
+            'background_color' => $setting->background_color ?: '#0F172A',
             'icons' => [
                 [
                     'src' => $icon192,
@@ -65,7 +70,7 @@ class PwaController extends Controller
 
         return response(json_encode($manifestData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))
             ->header('Content-Type', 'application/manifest+json; charset=utf-8')
-            ->header('Cache-Control', 'public, max-age=3600');
+            ->header('Cache-Control', 'public, max-age=60');
     }
 
     /**

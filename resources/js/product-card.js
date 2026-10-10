@@ -44,7 +44,14 @@ export function initProductCard(Alpine) {
                         this.updateCountdownText();
                     } else {
                         clearInterval(this.timerInterval);
-                        this.discountCountdownText = 'پایان زمان تخفیف';
+                        this.discountRemainingSeconds = 0;
+                        this.discountCountdownText = '';
+                        this.hasDiscount = false;
+                        this.isDiscounted = false;
+                        if (this.originalPrice) {
+                            this.price = this.originalPrice;
+                            this.originalPrice = null;
+                        }
                     }
                 }, 1000);
             }
@@ -64,7 +71,13 @@ export function initProductCard(Alpine) {
 
         updateCountdownText() {
             if (!this.discountRemainingSeconds || this.discountRemainingSeconds <= 0) {
-                this.discountCountdownText = 'پایان زمان تخفیف';
+                this.discountCountdownText = '';
+                this.hasDiscount = false;
+                this.isDiscounted = false;
+                if (this.originalPrice) {
+                    this.price = this.originalPrice;
+                    this.originalPrice = null;
+                }
                 return;
             }
             const hours = Math.floor(this.discountRemainingSeconds / 3600);

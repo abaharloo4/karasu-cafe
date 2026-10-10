@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'B Cafe Shiraz'),
-    'version' => env('APP_VERSION', '2.0.1'),
+    'version' => env('APP_VERSION', '2.0.2'),
 
     /*
     |--------------------------------------------------------------------------
