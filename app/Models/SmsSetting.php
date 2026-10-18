@@ -56,13 +56,38 @@ class SmsSetting extends Model
     ];
 
     protected $casts = [
-        'password' => 'encrypted',
         'reminder_hour' => 'integer',
         'is_reminder_enabled' => 'boolean',
         'is_welcome_enabled' => 'boolean',
         'is_daily_usage_enabled' => 'boolean',
         'is_order_sms_enabled' => 'boolean',
     ];
+
+    protected function password(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (empty($value)) {
+                    return $value;
+                }
+                try {
+                    return \Illuminate\Support\Facades\Crypt::decryptString($value);
+                } catch (\Throwable) {
+                    return $value;
+                }
+            },
+            set: function ($value) {
+                if (empty($value)) {
+                    return $value;
+                }
+                try {
+                    return \Illuminate\Support\Facades\Crypt::encryptString($value);
+                } catch (\Throwable) {
+                    return $value;
+                }
+            }
+        );
+    }
 
     public function cafe(): BelongsTo
     {

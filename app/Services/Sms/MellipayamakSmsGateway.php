@@ -44,10 +44,32 @@ class MellipayamakSmsGateway implements SmsGatewayInterface
         $setting = SmsSetting::where('cafe_id', $cafeId)->first();
 
         if ($setting && !empty($setting->pattern_otp)) {
-            return $this->sendPattern($phone, $setting->pattern_otp, [$code]);
+            $sent = $this->sendPattern($phone, $setting->pattern_otp, [$code]);
+            if ($sent) {
+                return true;
+            }
+
+            // Fallback to notification SMS if pattern fails and sender number is configured
+            $patternError = $this->lastError;
+            if (!empty($this->fromNumber)) {
+                $template = !empty($setting->template_text_otp)
+                    ? str_replace('{code}', $code, $setting->template_text_otp)
+                    : "کد تایید ورود شما به بی کافه: {$code}";
+                if ($this->sendNotification($phone, $template)) {
+                    $this->lastError = null;
+                    return true;
+                }
+            }
+
+            $this->lastError = $patternError;
+            return false;
         }
 
-        return $this->sendNotification($phone, "کد تایید ورود شما به بی کافه: {$code}");
+        $template = ($setting && !empty($setting->template_text_otp))
+            ? str_replace('{code}', $code, $setting->template_text_otp)
+            : "کد تایید ورود شما به بی کافه: {$code}";
+
+        return $this->sendNotification($phone, $template);
     }
 
     /**
@@ -203,23 +225,26 @@ class MellipayamakSmsGateway implements SmsGatewayInterface
     {
         $statusLower = strtolower($strRetStatus);
 
-        if (str_contains($statusLower, 'user') || str_contains($statusLower, 'pass') || $val === '-1' || $val === '-11' || $retStatus === 35) {
-            return "نام کاربری یا کلمه عبور در پنل ملی‌پیامک نامعتبر است (کد وضعیت: {$strRetStatus}).";
+        if (str_contains($statusLower, 'user') || str_contains($statusLower, 'pass') || $val === '-1' || $val === '-11' || $val === '-110') {
+            return "نام کاربری یا کلمه عبور / API Key در پنل ملی‌پیامک نامعتبر است (کد وضعیت: {$strRetStatus}).";
         }
-        if (str_contains($statusLower, 'credit') || $val === '-2' || $val === '-12') {
+        if ($val === '-4' || str_contains($statusLower, 'body') || str_contains($statusLower, 'pattern') || str_contains($statusLower, 'notfound')) {
+            return "کد متن یا پترن (Body ID) در پنل ملی‌پیامک یافت نشد، رد شده یا هنوز به تایید نرسیده است (Value: {$val}).";
+        }
+        if (str_contains($statusLower, 'credit') || $val === '-2' || $val === '-12' || $retStatus === 2) {
             return "اعتبار ریالی یا پیامکی حساب ملی‌پیامک شما کافی نیست.";
         }
-        if (str_contains($statusLower, 'line') || str_contains($statusLower, 'from') || $val === '-5') {
-            return "شماره خط فرستنده اختصاصی در پنل ملی‌پیامک فعال نیست یا اشتباه وارد شده است.";
+        if (str_contains($statusLower, 'line') || str_contains($statusLower, 'from') || str_contains($statusLower, 'invalidnumber') || $val === '-5' || $val === '5' || $retStatus === 9) {
+            return "شماره خط فرستنده اختصاصی در پنل ملی‌پیامک فعال نیست یا به این حساب تعلق ندارد (شماره ۵۰۰۰۲۷۱۰۰۶۱۰۳ را در پنل بررسی کنید).";
         }
-        if (str_contains($statusLower, 'body') || str_contains($statusLower, 'pattern') || str_contains($statusLower, 'notfound')) {
-            return "کد پترن (Body ID) در پنل ملی‌پیامک یافت نشد یا هنوز به تایید نرسیده است.";
+        if ($val === '-8' || ($retStatus === 35 && $val !== '-4')) {
+            return "شماره گیرنده در لیست سیاه مخابرات است یا ارسال به این شماره مجاز نیست.";
         }
-        if (str_contains($statusLower, 'filter')) {
+        if (str_contains($statusLower, 'filter') || $val === '-7') {
             return "متن پیامک حاوی عبارات فیلتر شده در سامانه مخابراتی است.";
         }
         if (str_contains($statusLower, 'invaliddata')) {
-            return "اطلاعات ارسالی (فرمت شماره موبایل یا تعداد متغیرهای پترن) نامعتبر است.";
+            return "اطلاعات ارسالی (کد پترن، متغیرها یا فرمت شماره) نامعتبر است (کد خطا: {$val}).";
         }
 
         return "خطای سامانه ملی‌پیامک: {$strRetStatus} (کد: {$retStatus}" . ($val ? ", نتیجه: {$val}" : "") . ")";

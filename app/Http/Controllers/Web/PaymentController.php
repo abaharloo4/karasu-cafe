@@ -119,6 +119,21 @@ class PaymentController extends Controller
             abort(404, 'تصویر رسید یافت نشد.');
         }
 
+        // Automatic 7-day retention safety check
+        if ($payment->created_at && $payment->created_at->lt(now()->subDays(7))) {
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($imagePath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($imagePath);
+            }
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($imagePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($imagePath);
+            }
+            $payment->update([
+                'receipt_image' => null,
+                'admin_notes' => trim(($payment->admin_notes ?? '') . ' [فیش واریزی طبق قانون انقضای ۷ روزه حذف شد]'),
+            ]);
+            abort(404, 'این رسید منقضی شده و طبق قوانین امنیتی پس از ۷ روز حذف گردیده است.');
+        }
+
         if (\Illuminate\Support\Facades\Storage::disk('local')->exists($imagePath)) {
             return \Illuminate\Support\Facades\Storage::disk('local')->response($imagePath);
         }

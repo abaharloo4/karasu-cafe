@@ -13,48 +13,16 @@
     <!-- Leaflet CSS for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-full antialiased bg-[#F8FAFC] text-[#19242B] selection:bg-[#387780] selection:text-white">
+<body class="min-h-full antialiased bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 selection:bg-[#387780] selection:text-white transition-colors">
+    @php
+        $siteContent = \App\Models\SiteContentSetting::getForCafe();
+    @endphp
 
-    <!-- Top Sticky Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="{{ route('storefront.menu') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-10 h-10 rounded-2xl object-cover border border-[#E2E8F0] shadow-2xs">
-                    <div>
-                        <span class="text-sm font-black text-[#19242B] block leading-tight">بی کافه (B Cafe)</span>
-                        <span class="text-[10px] text-[#64748B] block">کافه تخصصی موج سوم شیراز</span>
-                    </div>
-                </a>
-
-                <nav class="hidden md:flex items-center gap-6 text-xs font-bold text-[#475569]">
-                    <a href="{{ route('storefront.menu') }}" class="hover:text-[#387780] transition-colors">منوی آنلاین و سفارش</a>
-                    <a href="{{ route('storefront.subscriptions.index') }}" class="hover:text-[#387780] transition-colors">اشتراک‌های روزانه</a>
-                    <a href="{{ route('storefront.about') }}" class="text-[#387780] font-black border-b-2 border-[#387780] pb-0.5">درباره بی کافه</a>
-                </nav>
-            </div>
-
-            <div class="flex items-center gap-3">
-                @if(auth('customer')->check())
-                    <a href="{{ route('customer.dashboard') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#19242B] font-bold rounded-xl text-xs transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#387780]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span>پنل من ({{ auth('customer')->user()->name }})</span>
-                    </a>
-                @else
-                    <a href="{{ route('customer.login') }}" class="px-4 py-2 bg-[#387780] hover:bg-[#2E626A] text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        <span>ورود / عضویت</span>
-                    </a>
-                @endif
-
-                <a href="{{ route('cart.index') }}" class="p-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#387780] text-[#19242B] transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                </a>
-            </div>
-        </div>
-    </header>
+    <!-- Unified Global Navigation Header -->
+    <x-storefront-header :activeTab="'about'" :siteContent="$siteContent" />
 
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9] border-b border-[#E2E8F0] py-16 sm:py-24 overflow-hidden">
@@ -64,12 +32,11 @@
             </div>
 
             <h1 class="text-3xl sm:text-5xl font-black text-[#19242B] tracking-tight leading-tight">
-                داستان بی کافه؛ دانه باکیفیت، <br>
-                <span class="text-[#387780]">روست تازه و یه فنجان دلنشین</span>
+                {{ $siteContent->about_title ?? 'داستان بی کافه؛ دانه باکیفیت و روست تازه' }}
             </h1>
 
             <p class="text-sm sm:text-base text-[#64748B] max-w-2xl mx-auto leading-relaxed">
-                توی بی کافه شیراز همه‌چیز از یه فکر ساده شروع شد: قهوه تخصصی تازه برشت، بدون ادا و اصول اضافه، توی فضایی صمیمی و آروم که بتونی ساعت‌ها توش نفس بکشی یا با تمرکز کار کنی.
+                {{ $siteContent->about_subtitle ?? 'توی بی کافه شیراز همه‌چیز از یه فکر ساده شروع شد: قهوه تخصصی تازه برشت، بدون ادا و اصول اضافه.' }}
             </p>
 
             <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -188,7 +155,7 @@
                             <h3 class="text-base font-black text-[#19242B]">نشانی کافه در شیراز</h3>
                         </div>
                         <p class="text-xs sm:text-sm text-[#475569] leading-relaxed">
-                            شیراز، میدان ارم، ابتدای بلوار دانشجو، کافه تخصصی بی کافه (B Cafe)
+                            {{ $siteContent->about_address ?? 'شیراز، میدان ارم، ابتدای بلوار دانشجو، کافه تخصصی بی کافه (B Cafe)' }}
                         </p>
                     </div>
 
@@ -200,13 +167,15 @@
                         </div>
                         <div class="space-y-2 text-xs sm:text-sm text-[#475569]">
                             <div class="flex justify-between border-b border-slate-200 pb-2">
-                                <span>شنبه تا پنج‌شنبه:</span>
-                                <span class="font-black text-[#19242B] tabular-nums">۰۷:۳۰ صبح الی ۲۳:۳۰ شب</span>
+                                <span>ساعات سرویس‌دهی:</span>
+                                <span class="font-black text-[#19242B]">{{ $siteContent->footer_hours ?? 'همه‌روزه از ۰۸:۰۰ الی ۲۳:۳۰' }}</span>
                             </div>
+                            @if($siteContent->about_instagram)
                             <div class="flex justify-between pt-1">
-                                <span>جمعه‌ها و روزهای تعطیل:</span>
-                                <span class="font-black text-[#19242B] tabular-nums">۰۹:۰۰ صبح الی ۲۴:۰۰ شب</span>
+                                <span>اینستاگرام رسمی:</span>
+                                <a href="https://instagram.com/{{ ltrim($siteContent->about_instagram, '@') }}" target="_blank" class="font-black text-[#387780] hover:underline dir-ltr">{{ $siteContent->about_instagram }}</a>
                             </div>
+                            @endif
                         </div>
                     </div>
 
@@ -214,21 +183,21 @@
                     <div class="p-6 rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-4">
                         <div class="flex items-center justify-between text-xs sm:text-sm">
                             <span class="text-[#64748B]">شماره تماس و هماهنگی:</span>
-                            <a href="tel:07136280000" class="font-black text-[#387780] hover:underline dir-ltr">
-                                071-36280000
+                            <a href="tel:{{ preg_replace('/[^0-9]/', '', $siteContent->about_phone ?? '07136280000') }}" class="font-black text-[#387780] hover:underline dir-ltr">
+                                {{ $siteContent->about_phone ?? '071-36280000' }}
                             </a>
                         </div>
 
                         <div class="pt-2 border-t border-slate-200">
                             <span class="text-xs font-bold text-[#19242B] block mb-2">مسیریابی مستقیم با اپلیکیشن‌ها:</span>
                             <div class="grid grid-cols-3 gap-2">
-                                <a href="https://neshan.org/maps/@29.6385,52.5186,16z" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-blue-600 transition-colors">
+                                <a href="{{ $siteContent->about_map_neshan_url ?: 'https://neshan.org/maps/@' . ($siteContent->about_map_lat ?? 29.6385) . ',' . ($siteContent->about_map_lng ?? 52.5186) . ',16z' }}" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-blue-600 transition-colors">
                                     نشان
                                 </a>
-                                <a href="https://balad.ir/location?lat=29.6385&lng=52.5186" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-emerald-600 transition-colors">
+                                <a href="{{ $siteContent->about_map_balad_url ?: 'https://balad.ir/location?lat=' . ($siteContent->about_map_lat ?? 29.6385) . '&lng=' . ($siteContent->about_map_lng ?? 52.5186) }}" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-emerald-600 transition-colors">
                                     بلد
                                 </a>
-                                <a href="https://www.google.com/maps/search/?api=1&query=29.6385,52.5186" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-rose-600 transition-colors">
+                                <a href="{{ $siteContent->about_map_google_url ?: 'https://www.google.com/maps/search/?api=1&query=' . ($siteContent->about_map_lat ?? 29.6385) . ',' . ($siteContent->about_map_lng ?? 52.5186) }}" target="_blank" class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-center text-xs font-black text-rose-600 transition-colors">
                                     گوگل مپ
                                 </a>
                             </div>
@@ -265,28 +234,14 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-[#E2E8F0] py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
-            <div class="flex items-center gap-2">
-                <img src="{{ asset('images/logo.jpeg') }}" class="w-7 h-7 rounded-lg object-cover">
-                <span class="font-bold text-[#19242B]">بی کافه (B Cafe) شیراز</span>
-                <span>— فنجان روزمرگی شما</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span>© {{ date('Y') }} کلیه حقوق محفوظ است.</span>
-                <span>•</span>
-                <span>طراحی و توسعه توسط امیرمحمد بهارلو</span>
-            </div>
-        </div>
-    </footer>
+    <x-storefront-footer :siteContent="$siteContent" />
 
     <!-- Leaflet JS for Map -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Shiraz Eram coordinates
-            const cafeLat = 29.6385;
-            const cafeLng = 52.5186;
+            const cafeLat = {{ (float) ($siteContent->about_map_lat ?: 29.6385) }};
+            const cafeLng = {{ (float) ($siteContent->about_map_lng ?: 52.5186) }};
 
             const map = L.map('about-cafe-map', {
                 scrollWheelZoom: false
@@ -297,7 +252,7 @@
             }).addTo(map);
 
             const marker = L.marker([cafeLat, cafeLng]).addTo(map);
-            marker.bindPopup('<div style="font-family: inherit; font-size: 13px; font-weight: bold; text-align: center; padding: 4px;"><svg class="w-4 h-4 inline-block text-[#387780]" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-left: 2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z M6 1v3 M10 1v3 M14 1v3"/></svg> بی کافه (B Cafe)<br><span style="font-size: 11px; font-weight: normal; color: #64748B;">میدان ارم، ابتدای بلوار دانشجو</span></div>').openPopup();
+            marker.bindPopup('<div style="font-family: inherit; font-size: 13px; font-weight: bold; text-align: center; padding: 4px;"><svg class="w-4 h-4 inline-block text-[#387780]" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-left: 2px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z M6 1v3 M10 1v3 M14 1v3"/></svg> بی کافه (B Cafe)<br><span style="font-size: 11px; font-weight: normal; color: #64748B;">{{ addslashes($siteContent->about_address ?? 'شیراز') }}</span></div>').openPopup();
         });
     </script>
 </body>

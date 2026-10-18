@@ -9,23 +9,27 @@
     <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body x-data="orderStatusTracker('{{ $order->order_number }}', '{{ $order->status }}')"
-      class="h-full antialiased selection:bg-[#3C6E71] selection:text-[#F7F9FA] bg-[#F7F9FA]/35 text-[#353535] py-8 sm:py-12 px-4 sm:px-6">
+      class="h-full antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 py-8 sm:py-12 px-4 sm:px-6 transition-colors">
 
     <div class="max-w-2xl mx-auto space-y-6">
 
         <!-- Top Header Navigation -->
-        <header class="flex items-center justify-between border-b border-[#353535]/10 pb-4">
-            <a href="{{ route('storefront.menu') }}" class="text-xs font-bold text-[#353535] hover:text-[#284B63] btn-tactile flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <header class="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
+            <a href="{{ route('storefront.menu') }}" class="text-xs font-bold text-[#19242B] dark:text-slate-200 hover:text-[#387780] dark:hover:text-teal-400 btn-tactile flex items-center gap-1.5">
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 <span>بازگشت به منوی بی کافه</span>
             </a>
 
             <div class="flex items-center gap-2.5">
-                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-8 h-8 rounded-xl object-cover border border-[#353535]/15 shadow-2xs">
-                <span class="text-xs font-black text-[#353535]">پیگیری بلادرنگ سفارش</span>
+                <!-- Dark / Light Mode Switcher Toggle Button -->
+                <x-theme-toggle size="sm" />
+
+                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-8 h-8 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-2xs">
+                <span class="text-xs font-black text-[#19242B] dark:text-slate-100">پیگیری بلادرنگ سفارش</span>
             </div>
         </header>
 
@@ -92,24 +96,63 @@
 
         @elseif($order->payment_method === 'card_to_card')
             <!-- Card to Card -->
-            <div class="p-6 rounded-3xl bg-gradient-to-br from-[#284B63]/15 to-[#3C6E71]/15 border-2 border-[#284B63]/30 shadow-sm space-y-3.5">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-[#284B63] text-white flex items-center justify-center flex-shrink-0 shadow-md">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            @if($order->latestPayment && $order->latestPayment->status === 'failed' && $order->status !== 'cancelled')
+                <!-- Barista Requested Re-Upload -->
+                <div class="p-6 rounded-3xl bg-amber-500/10 border-2 border-amber-500/40 shadow-sm space-y-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-black text-amber-800 uppercase tracking-wider block">توجه • فیش واریزی نیاز به اصلاح دارد</span>
+                            <h2 class="text-base sm:text-lg font-black text-amber-950">درخواست بارگذاری مجدد فیش بانکی</h2>
+                        </div>
                     </div>
-                    <div>
-                        <span class="text-[11px] font-black text-[#284B63] uppercase tracking-wider block">رسید بانکی دریافت شد</span>
-                        <h2 class="text-base sm:text-lg font-black text-[#353535]">با تشکر از ثبت سفارش - فیش بانکی دریافت شد</h2>
+
+                    <div class="p-3.5 bg-white/80 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-1">
+                        <span class="font-bold block">توضیحات باریستا / صندوق‌دار:</span>
+                        <p class="font-black text-amber-950">{{ $order->latestPayment->admin_notes ?: 'فیش قبلی ناخوانا یا واریزی ناقص است. لطفاً فیش جدید و واضح ارسال فرمایید.' }}</p>
+                    </div>
+
+                    <form method="POST" action="{{ route('storefront.order-status.reupload-receipt', $order->order_number) }}" enctype="multipart/form-data" class="space-y-3 pt-2">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-amber-950 mb-1.5">تصویر جدید فیش واریزی *</label>
+                            <input type="file" name="receipt_image" accept="image/*" required
+                                   class="w-full text-xs text-slate-700 file:me-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#3C6E71] file:text-white hover:file:bg-[#284B63] file:cursor-pointer border border-amber-300 rounded-xl bg-white p-1">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-amber-950 mb-1.5">شماره پیگیری / کد ارجاع جدید (اختیاری)</label>
+                            <input type="text" name="tracking_number" placeholder="مثال: ۱۲۳۴۵۶"
+                                   class="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 text-xs font-mono text-left bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-[#3C6E71] hover:bg-[#284B63] text-white font-black text-xs rounded-xl shadow-md transition-colors btn-tactile">
+                            ارسال مجدد فیش برای باریستا
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="p-6 rounded-3xl bg-gradient-to-br from-[#284B63]/15 to-[#3C6E71]/15 border-2 border-[#284B63]/30 shadow-sm space-y-3.5">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-2xl bg-[#284B63] text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-black text-[#284B63] uppercase tracking-wider block">رسید بانکی دریافت شد</span>
+                            <h2 class="text-base sm:text-lg font-black text-[#353535]">با تشکر از ثبت سفارش - فیش بانکی دریافت شد</h2>
+                        </div>
+                    </div>
+                    <p class="text-xs sm:text-sm text-[#353535]/85 leading-relaxed font-medium">
+                        اطلاعات فیش واریزی کارت‌به‌کارت شما به صندوق‌دار بی کافه ارسال شد. پس از تایید آنی توسط صندوق، وضعیت سفارش روی این صفحه خودکار به‌روزرسانی خواهد شد.
+                    </p>
+                    <div class="flex items-center gap-2 pt-1 text-[11px] text-[#284B63] font-bold">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>میانگین زمان تایید رسید: کمتر از ۲ الی ۵ دقیقه</span>
                     </div>
                 </div>
-                <p class="text-xs sm:text-sm text-[#353535]/85 leading-relaxed font-medium">
-                    اطلاعات فیش واریزی کارت‌به‌کارت شما به صندوق‌دار بی کافه ارسال شد. پس از تایید آنی توسط صندوق، وضعیت سفارش روی این صفحه خودکار به‌روزرسانی خواهد شد.
-                </p>
-                <div class="flex items-center gap-2 pt-1 text-[11px] text-[#284B63] font-bold">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>میانگین زمان تایید رسید: کمتر از ۲ الی ۵ دقیقه</span>
-                </div>
-            </div>
+            @endif
 
         @elseif($order->payment_method === 'subscription_credit')
             <!-- Subscription Coffee Quota -->
@@ -211,10 +254,13 @@
                         <div x-show="isActive" class="absolute w-5 h-5 rounded-full bg-[#3C6E71]/40 animate-ping"></div>
                     </div>
                     <div class="text-xs font-bold text-[#353535] leading-relaxed">
+                        <template x-if="status === 'awaiting_payment_verification'">
+                            <span>فیش واریز شما با موفقیت دریافت شد و در انتظار بررسی و تایید باریستا است.</span>
+                        </template>
                         <template x-if="status === 'pending'">
                             <span>سفارش شما با موفقیت ثبت شد و در انتظار تایید باریستا است.</span>
                         </template>
-                        <template x-if="status === 'processing'">
+                        <template x-if="status === 'preparing' || status === 'processing'">
                             <span>باریستای بی کافه در حال دم‌آوری و آماده‌سازی سفارش شماست (تخمین: {{ $order->estimated_prep_time }} دقیقه).</span>
                         </template>
                         <template x-if="status === 'ready' || status === 'shipping'">
@@ -351,7 +397,9 @@
 
     function getStep(status) {
         switch(status) {
-            case 'pending': return 1;
+            case 'pending':
+            case 'awaiting_payment_verification': return 1;
+            case 'preparing':
             case 'processing': return 2;
             case 'ready':
             case 'shipping': return 3;

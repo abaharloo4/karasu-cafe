@@ -41,14 +41,19 @@ class CheckoutController extends Controller
     {
         $customer = auth('customer')->user() ?? auth()->user()?->customer ?? null;
         $deliveryZones = DeliveryZone::where('status', 'active')->get();
-        $gateways = PaymentGateway::where('is_active', true)->get()->keyBy('key');
+        $gateways = PaymentGateway::all()->keyBy('key');
+        $fulfillmentMethods = \App\Models\FulfillmentSetting::getForCafe(1);
         $savedAddresses = $customer ? $customer->addresses()->with('deliveryZone')->get() : collect();
         $activeSubscription = $customer?->activeSubscription;
+        if ($activeSubscription) {
+            $activeSubscription->loadMissing('plan.products');
+        }
 
         return view('storefront.checkout', compact(
             'customer',
             'deliveryZones',
             'gateways',
+            'fulfillmentMethods',
             'savedAddresses',
             'activeSubscription'
         ));
@@ -77,6 +82,7 @@ class CheckoutController extends Controller
             'tracking_number' => 'nullable|string|max:50',
             'coupon_code' => 'nullable|string|max:50',
             'use_wallet' => 'nullable|boolean',
+            'use_subscription_credit' => 'nullable|boolean',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.type' => 'nullable|in:product,subscription',
@@ -91,15 +97,33 @@ class CheckoutController extends Controller
         $cafeId = 1;
 
         // In-person only guard for subscription credit
-        if ($validated['payment_method'] === 'subscription_credit' && $validated['order_type'] === 'courier') {
+        $wantsSubCredit = !empty($validated['use_subscription_credit']) || $validated['payment_method'] === 'subscription_credit';
+        if ($wantsSubCredit && $validated['order_type'] === 'courier') {
             return back()->with('error', 'سهمیه اشتراک قهوه روزانه فقط مختص مراجعه حضوری و بیرون‌بر است و برای ارسال با پیک قابل استفاده نمی‌باشد.');
         }
 
-        // Check if selected payment gateway is active
+        // Validate Fulfillment Method (Admin Control & Coming Soon check)
+        $fulfillmentMethods = \App\Models\FulfillmentSetting::getForCafe($cafeId);
+        $selectedFulfillment = $fulfillmentMethods->get($validated['order_type']);
+        if ($selectedFulfillment) {
+            if ($selectedFulfillment->isComingSoon()) {
+                return back()->with('error', 'روش تحویل «' . $selectedFulfillment->title . '» در حال حاضر در حالت «به‌زودی» قرار دارد و امکان ثبت سفارش با آن وجود ندارد.');
+            }
+            if ($selectedFulfillment->isInactive()) {
+                return back()->with('error', 'روش تحویل «' . $selectedFulfillment->title . '» در حال حاضر توسط مدیریت کافه غیرفعال شده است.');
+            }
+        }
+
+        // Check if selected payment gateway is active or coming soon
         if (in_array($validated['payment_method'], ['zarinpal', 'card_to_card', 'cash'])) {
             $gw = PaymentGateway::where('key', $validated['payment_method'])->first();
-            if ($gw && !$gw->is_active) {
-                return back()->with('error', 'این روش پرداخت فعلاً فعال نیست، لطفاً روش دیگه‌ای رو انتخاب کن.');
+            if ($gw) {
+                if ($gw->isComingSoon()) {
+                    return back()->with('error', 'روش پرداخت «' . $gw->title . '» در حال حاضر در وضعیت «به‌زودی» است و امکان استفاده از آن نیست.');
+                }
+                if ($gw->isInactive()) {
+                    return back()->with('error', 'این روش پرداخت فعلاً فعال نیست، لطفاً روش دیگه‌ای رو انتخاب کن.');
+                }
             }
         }
 
@@ -108,7 +132,7 @@ class CheckoutController extends Controller
             $customer = auth('customer')->user();
         } else {
             // Guests cannot drain someone's wallet or burn daily subscription credit without logging in
-            if (!empty($validated['use_wallet']) || $validated['payment_method'] === 'subscription_credit') {
+            if (!empty($validated['use_wallet']) || !empty($validated['use_subscription_credit']) || $validated['payment_method'] === 'subscription_credit') {
                 return back()->with('error', 'برای استفاده از کیف‌پول یا سهمیه اشتراک، اول وارد حسابت شو.');
             }
 
@@ -234,7 +258,8 @@ class CheckoutController extends Controller
         }
 
         // Pre-validate subscription credit
-        if ($validated['payment_method'] === 'subscription_credit') {
+        $wantsSubCredit = !empty($validated['use_subscription_credit']) || $validated['payment_method'] === 'subscription_credit';
+        if ($wantsSubCredit) {
             $activeSub = $customer->activeSubscription;
             if (!$activeSub || !$activeSub->isValid() || $subscriptionService->hasUsedToday($activeSub)) {
                 return back()->with('error', 'شما اشتراک فعال قهوه روزانه ندارید یا سهمیه امروز قبلاً مصرف شده است.');
@@ -372,6 +397,39 @@ class CheckoutController extends Controller
                     }
                 }
 
+                // Handle Subscription item credit (SEC-02 defense)
+                $wantsSubCredit = !empty($validated['use_subscription_credit']) || $validated['payment_method'] === 'subscription_credit';
+                if ($wantsSubCredit) {
+                    $activeSub = $customer->activeSubscription;
+                    if (!$activeSub || !$activeSub->isValid()) {
+                        throw new \DomainException('اشتراک فعال و معتبری برای کسر سهمیه یافت نشد.');
+                    }
+                    if ($subscriptionService->hasUsedToday($activeSub)) {
+                        throw new \DomainException('سهمیه اشتراک امروز شما قبلاً مصرف شده است.');
+                    }
+                    $activeSub->loadMissing('plan.products');
+                    $allowedProductIds = $activeSub->plan->products->pluck('id')->toArray();
+
+                    $eligibleItem = null;
+                    foreach ($orderItemsData as $item) {
+                        if ($item['item_type'] === 'product' && (empty($allowedProductIds) || in_array($item['product_id'], $allowedProductIds))) {
+                            $eligibleItem = $item;
+                            break;
+                        }
+                    }
+
+                    if (!$eligibleItem) {
+                        throw new \DomainException('هیچ فنجان قهوه منطبق با پلن اشتراک شما در سبد خرید یافت نشد.');
+                    }
+
+                    $firstProduct = $products->get($eligibleItem['product_id']);
+                    $coffeeDiscount = (float) ($firstProduct?->price ?? $eligibleItem['price']);
+                    $discountAmount += $coffeeDiscount;
+
+                    $staffUserId = auth()->id() ?? 1;
+                    $subscriptionService->consumeDailyItem($cafeId, $activeSub->id, $eligibleItem['product_id'], $staffUserId);
+                }
+
                 $payableBeforeWallet = max(0, ($subtotal - $discountAmount) + $deliveryFee);
                 $walletDeduction = 0;
 
@@ -401,21 +459,8 @@ class CheckoutController extends Controller
 
                 $finalPayable = max(0, $payableBeforeWallet - $walletDeduction);
 
-                // Handle Subscription item credit (SEC-02 defense)
-                if ($validated['payment_method'] === 'subscription_credit') {
-                    $activeSub = $customer->activeSubscription;
-                    $firstItemProductId = $orderItemsData[0]['product_id'] ?? null;
-                    $firstProduct = $products->get($firstItemProductId);
-                    $coffeeDiscount = (float) ($firstProduct?->price ?? 0);
-                    $discountAmount += $coffeeDiscount;
-                    $finalPayable = max(0, ($subtotal - $discountAmount) + $deliveryFee);
-
-                    if ($finalPayable > 0) {
-                        throw new \DomainException('سهمیه اشتراک تنها هزینه ۱ فنجان قهوه را پوشش می‌دهد. برای پرداخت الباقی سفارش (' . number_format($finalPayable) . ' تومان)، لطفاً درگاه زرین‌پال یا کارت‌به‌کارت را انتخاب کنید.');
-                    }
-
-                    $staffUserId = auth()->id() ?? 1;
-                    $subscriptionService->consumeDailyItem($cafeId, $activeSub->id, $firstItemProductId, $staffUserId);
+                if ($validated['payment_method'] === 'subscription_credit' && $finalPayable > 0) {
+                    throw new \DomainException('سهمیه اشتراک برای ۱ فنجان قهوه اعمال شد، اما به دلیل وجود آیتم‌های اضافی در سبد یا هزینه ارسال، مبلغ ' . number_format($finalPayable) . ' تومان باقی‌مانده است. لطفاً درگاه پرداخت (زرین‌پال، کارت‌به‌کارت یا تسویه در کافه) را انتخاب کنید.');
                 }
 
                 // Generate Order Number: 5 digits numeric
@@ -545,7 +590,7 @@ class CheckoutController extends Controller
         }
 
         // 4. Free Subscription Credit / Fully Covered
-        if ($validated['payment_method'] === 'subscription_credit' && $finalPayable == 0) {
+        if (($validated['payment_method'] === 'subscription_credit' || $wantsSubCredit) && $finalPayable == 0) {
             $order->update(['status' => 'pending']);
 
             return redirect()->route('storefront.order-status', ['order_number' => $order->order_number])
@@ -585,8 +630,9 @@ class CheckoutController extends Controller
         return response()->json([
             'status' => $order->status,
             'status_label' => match($order->status) {
+                'awaiting_payment_verification' => 'در انتظار بررسی فیش واریز',
                 'pending' => 'در انتظار تایید پرداخت / باریستا',
-                'processing' => 'در حال آماده‌سازی در بار',
+                'preparing', 'processing' => 'در حال آماده‌سازی در بار',
                 'ready' => $order->isDineIn() ? 'آماده تحویل روی کانتر' : 'آماده ارسال با پیک',
                 'shipping' => 'در مسیر ارسال با پیک شیراز',
                 'completed' => 'تکمیل و تحویل داده شد',
@@ -594,14 +640,14 @@ class CheckoutController extends Controller
                 default => 'در حال بررسی',
             },
             'status_step' => match($order->status) {
-                'pending' => 1,
-                'processing' => 2,
+                'awaiting_payment_verification', 'pending' => 1,
+                'preparing', 'processing' => 2,
                 'ready', 'shipping' => 3,
                 'completed' => 4,
                 'cancelled' => 0,
                 default => 1,
             },
-            'is_active' => in_array($order->status, ['pending', 'processing', 'ready', 'shipping']),
+            'is_active' => in_array($order->status, ['awaiting_payment_verification', 'pending', 'preparing', 'processing', 'ready', 'shipping']),
         ])->header('ETag', $etag);
     }
 
@@ -646,4 +692,37 @@ class CheckoutController extends Controller
             'message' => $check['message'],
         ]);
     }
+
+    /**
+     * Re-upload a card-to-card receipt when requested by barista/admin.
+     */
+    public function reuploadReceipt(
+        string $orderNumber,
+        Request $request,
+        \App\Services\Payment\CardToCardService $cardToCardService,
+        \App\Services\Pwa\PushNotificationService $pushService
+    ) {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        $request->validate([
+            'receipt_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'tracking_number' => 'nullable|string|max:100',
+        ]);
+
+        $cardToCardService->submitReceipt(
+            $order,
+            $request->input('tracking_number'),
+            $request->file('receipt_image')
+        );
+
+        $pushService->sendToAdmins(
+            'فیش کارت‌به‌کارت جدید (بارگذاری مجدد)',
+            "مشتری فیش واریزی جدیدی برای سفارش ({$order->order_number}) ارسال کرد.",
+            ['order_id' => $order->id, 'url' => route('admin.live-orders.index')],
+            'payment_pending'
+        );
+
+        return back()->with('success', 'فیش جدید شما با موفقیت ثبت شد و در اولویت بررسی باریستای بی کافه قرار گرفت.');
+    }
 }
+

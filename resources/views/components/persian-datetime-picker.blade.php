@@ -2,17 +2,23 @@
     'name' => 'datetime',
     'value' => null,
     'label' => null,
-    'placeholder' => 'انتخاب تاریخ و زمان...',
+    'placeholder' => null,
     'required' => false,
     'minYear' => 1320,
     'maxYear' => 1410,
+    'showTime' => true,
 ])
+
+@php
+    $placeholder = $placeholder ?? ($showTime ? 'انتخاب تاریخ و زمان...' : 'انتخاب تاریخ شمسی...');
+@endphp
 
 <div x-data="persianDateTimePicker({
         initialValue: '{{ $value ?? '' }}',
         name: '{{ $name }}',
         minYear: {{ $minYear }},
-        maxYear: {{ $maxYear }}
+        maxYear: {{ $maxYear }},
+        showTime: {{ $showTime ? 'true' : 'false' }}
     })"
     class="relative w-full text-right select-none"
     dir="rtl">
@@ -78,27 +84,29 @@
          style="display: none;">
 
         <!-- Header Tabs: Calendar Sheet vs Wristwatch -->
-        <div class="bg-slate-800 text-white p-2.5 rounded-2xl flex items-center justify-between mb-3 border border-slate-700">
-            <div class="flex items-center gap-1.5 w-full">
-                <!-- Date Tab (Calendar) -->
-                <button type="button"
-                        @click="activeTab = 'date'"
-                        :class="activeTab === 'date' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
-                        class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
-                    <span x-text="selectedDateText || 'تقویم روز'"></span>
-                </button>
+        <template x-if="showTime">
+            <div class="bg-slate-800 text-white p-2.5 rounded-2xl flex items-center justify-between mb-3 border border-slate-700">
+                <div class="flex items-center gap-1.5 w-full">
+                    <!-- Date Tab (Calendar) -->
+                    <button type="button"
+                            @click="activeTab = 'date'"
+                            :class="activeTab === 'date' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
+                            class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        <span x-text="selectedDateText || 'تقویم روز'"></span>
+                    </button>
 
-                <!-- Time Tab (Wristwatch) -->
-                <button type="button"
-                        @click="activeTab = 'time'"
-                        :class="activeTab === 'time' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
-                        class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3l2 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5V3h6v2M9 19v2h6v-2"/></svg>
-                    <span class="font-mono dir-ltr" x-text="`ساعت ${pad(hour)}:${pad(minute)}`"></span>
-                </button>
+                    <!-- Time Tab (Wristwatch) -->
+                    <button type="button"
+                            @click="activeTab = 'time'"
+                            :class="activeTab === 'time' ? 'bg-[#3C6E71] text-white font-black shadow-md' : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700'"
+                            class="flex-1 py-2 px-2 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3l2 1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5V3h6v2M9 19v2h6v-2"/></svg>
+                        <span class="font-mono dir-ltr" x-text="`ساعت ${pad(hour)}:${pad(minute)}`"></span>
+                    </button>
+                </div>
             </div>
-        </div>
+        </template>
 
         <!-- 1. CALENDAR SHEET VIEW -->
         <div x-show="activeTab === 'date'" class="bg-white p-3 rounded-2xl shadow-inner text-[#19242B]">
@@ -197,7 +205,7 @@
         </div>
 
         <!-- 2. WRISTWATCH VIEW (ساعت مچی ۲۴ ساعته) -->
-        <div x-show="activeTab === 'time'" class="py-1 flex flex-col items-center justify-center text-white">
+        <div x-show="showTime && activeTab === 'time'" class="py-1 flex flex-col items-center justify-center text-white">
             <div class="flex items-center justify-between w-full mb-1.5 text-[11px] px-1">
                 <div class="flex items-center gap-2">
                     <span class="font-mono text-sm font-black text-emerald-400 tabular-nums dir-ltr bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700">
@@ -278,7 +286,7 @@
 
             <button type="button" @click="confirmAll()" class="px-5 py-1.5 rounded-xl bg-[#3C6E71] hover:bg-emerald-600 text-white font-black shadow-md transition-colors flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                <span>تایید تاریخ و ساعت</span>
+                <span x-text="showTime ? 'تایید تاریخ و ساعت' : 'تایید تاریخ'"></span>
             </button>
         </div>
     </div>
@@ -290,6 +298,7 @@ function persianDateTimePicker(config) {
     return {
         isOpen: false,
         name: config.name || 'datetime',
+        showTime: config.showTime !== false,
         gregorianIsoValue: config.initialValue || '',
         displayFa: '',
         activeTab: 'date', // 'date' or 'time'
@@ -467,7 +476,11 @@ function persianDateTimePicker(config) {
             this.selectedYear = parseInt(this.viewYear);
             this.selectedMonth = parseInt(this.viewMonth);
             this.selectedDay = parseInt(day);
-            setTimeout(() => { this.activeTab = 'time'; }, 180);
+            if (this.showTime) {
+                setTimeout(() => { this.activeTab = 'time'; }, 180);
+            } else {
+                this.confirmAll();
+            }
         },
 
         // Wristwatch Angles & Positioning
@@ -550,19 +563,26 @@ function persianDateTimePicker(config) {
             const gy = g[0];
             const gm = String(g[1]).padStart(2, '0');
             const gd = String(g[2]).padStart(2, '0');
-            const th = this.pad(this.hour);
-            const tm = this.pad(this.minute);
-
-            this.gregorianIsoValue = `${gy}-${gm}-${gd}T${th}:${tm}`;
+            if (this.showTime) {
+                const th = this.pad(this.hour);
+                const tm = this.pad(this.minute);
+                this.gregorianIsoValue = `${gy}-${gm}-${gd}T${th}:${tm}`;
+            } else {
+                this.gregorianIsoValue = `${gy}-${gm}-${gd}`;
+            }
             this.updateDisplay();
             this.isOpen = false;
         },
 
         updateDisplay() {
             if (this.selectedYear && this.selectedMonth && this.selectedDay) {
-                const th = this.pad(this.hour);
-                const tm = this.pad(this.minute);
-                this.displayFa = `${this.selectedYear}/${this.pad(this.selectedMonth)}/${this.pad(this.selectedDay)} ساعت ${th}:${tm}`;
+                if (this.showTime) {
+                    const th = this.pad(this.hour);
+                    const tm = this.pad(this.minute);
+                    this.displayFa = `${this.selectedYear}/${this.pad(this.selectedMonth)}/${this.pad(this.selectedDay)} ساعت ${th}:${tm}`;
+                } else {
+                    this.displayFa = `${this.selectedYear}/${this.pad(this.selectedMonth)}/${this.pad(this.selectedDay)}`;
+                }
             } else {
                 this.displayFa = '';
             }

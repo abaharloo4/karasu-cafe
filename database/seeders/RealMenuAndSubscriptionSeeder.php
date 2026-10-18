@@ -485,59 +485,7 @@ class RealMenuAndSubscriptionSeeder extends Seeder
             }
         }
 
-        // 4. Lucky Wheel Prizes (گردونه شانس روزانه)
-        $wheelPrizes = [
-            [
-                'title' => '۵۰ امتیاز باشگاه مشتریان',
-                'prize_type' => 'points',
-                'prize_value' => '50',
-                'win_probability' => 30,
-            ],
-            [
-                'title' => 'کوپن تخفیف ۲۰٪ بی کافه',
-                'prize_type' => 'coupon',
-                'prize_value' => 'COFFEE20',
-                'win_probability' => 25,
-            ],
-            [
-                'title' => 'یک فنجان قهوه اسپرسو مهمان کافه',
-                'prize_type' => 'free_coffee',
-                'prize_value' => '1',
-                'win_probability' => 20,
-            ],
-            [
-                'title' => '۱۰۰ امتیاز ویژه باشگاه',
-                'prize_type' => 'points',
-                'prize_value' => '100',
-                'win_probability' => 10,
-            ],
-            [
-                'title' => 'کوپن تخفیف ۳۵٪ اختصاصی',
-                'prize_type' => 'coupon',
-                'prize_value' => 'VIP35',
-                'win_probability' => 5,
-            ],
-            [
-                'title' => 'شانس مجدد برای فردا',
-                'prize_type' => 'empty',
-                'prize_value' => '0',
-                'win_probability' => 10,
-            ],
-        ];
-
-        foreach ($wheelPrizes as $prizeData) {
-            \App\Models\LuckyWheelPrize::updateOrCreate(
-                ['cafe_id' => $cafe->id, 'title' => $prizeData['title']],
-                [
-                    'prize_type' => $prizeData['prize_type'],
-                    'prize_value' => $prizeData['prize_value'],
-                    'win_probability' => $prizeData['win_probability'],
-                    'status' => 'active',
-                ]
-            );
-        }
-
-        // 5. Authentic Test Customer with Subscription & Tier
+        // 4. Authentic Test Customer with Subscription & Tier
         $customer = \App\Models\Customer::updateOrCreate(
             ['phone' => '09171234567'],
             [

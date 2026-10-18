@@ -21,6 +21,8 @@
 @source '../../storage/framework/views/*.php';
 @source '../views/**/*.blade.php';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: 'Post', 'Vazirmatn', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
@@ -87,28 +89,164 @@
     --text-muted: #64748B;
 }
 
+.dark {
+    --background-base: #0F171B;
+    --background: #0F171B;
+    --surface-1: #19242B;
+    --surface-2: #141D22;
+    --surface-3: #1E2B33;
+    --surface-4: #387780;
+
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+}
+
 /* Smooth Scrolling for Anchor Links */
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
 }
 
-/* White Clean Application Background */
+/* Application Base Background and Text Colors with Silk Transition */
 body {
     font-family: 'Post', 'Vazirmatn', sans-serif;
-    background-color: #F8FAFC;
+    background-color: var(--background-base);
     color: var(--text-primary);
     font-feature-settings: 'ss01' 1;
     letter-spacing: 0 !important;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 300ms cubic-bezier(0.16, 1, 0.3, 1), color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* View Transition API Polish */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 350ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Spring easing for theme toggle icon */
+.ease-spring {
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Zero letter-spacing on all Persian text per VibeFarsi rules */
 h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
     font-family: 'Post', 'Vazirmatn', sans-serif;
     letter-spacing: 0 !important;
+}
+
+/* Dark Mode Surface Overrides for Legacy hardcoded classes */
+.dark .bg-white {
+    background-color: #19242B !important;
+}
+.dark .bg-white\/95 {
+    background-color: rgba(20, 29, 34, 0.95) !important;
+}
+.dark .bg-white\/90 {
+    background-color: rgba(20, 29, 34, 0.9) !important;
+}
+.dark .bg-white\/80 {
+    background-color: rgba(20, 29, 34, 0.8) !important;
+}
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-\[\#F7F9FA\] {
+    background-color: #141D22 !important;
+}
+.dark .bg-\[\#F7F9FA\]\/60,
+.dark .bg-\[\#F7F9FA\]\/50,
+.dark .bg-\[\#F7F9FA\]\/40,
+.dark .bg-\[\#F7F9FA\]\/35 {
+    background-color: rgba(20, 29, 34, 0.6) !important;
+}
+.dark .bg-\[\#F1F5F9\] {
+    background-color: #1E2B33 !important;
+}
+
+/* Dark mode text colors */
+.dark .text-\[\#353535\],
+.dark .text-\[\#19242B\],
+.dark .text-slate-800,
+.dark .text-slate-900 {
+    color: #F1F5F9 !important;
+}
+.dark .text-\[\#353535\]\/75,
+.dark .text-\[\#353535\]\/70,
+.dark .text-\[\#353535\]\/65,
+.dark .text-\[\#353535\]\/60,
+.dark .text-\[\#64748B\],
+.dark .text-slate-600,
+.dark .text-slate-500 {
+    color: #94A3B8 !important;
+}
+
+/* Dark mode borders */
+.dark .border-slate-200,
+.dark .border-slate-200\/80,
+.dark .border-\[\#E2E8F0\],
+.dark .border-\[\#D9D9D9\],
+.dark .border-\[\#353535\]\/15,
+.dark .border-\[\#353535\]\/12,
+.dark .border-\[\#353535\]\/10,
+.dark .border-\[\#353535\]\/8 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dark mode inputs and forms */
+.dark input[type="text"],
+.dark input[type="search"],
+.dark input[type="tel"],
+.dark input[type="number"],
+.dark textarea,
+.dark select {
+    background-color: #141D22 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #F1F5F9 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #64748B !important;
+}
+
+.dark input[type="checkbox"] {
+    background-color: #141D22;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.dark input[type="checkbox"]:checked {
+    background-color: #387780;
+    border-color: #387780;
+}
+.dark input[type="radio"] {
+    background-color: #141D22;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.dark input[type="radio"]:checked {
+    background-color: #141D22;
+    border-color: #387780;
+}
+
+.dark .alert-success {
+    background-color: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #6EE7B7;
+}
+.dark .alert-error {
+    background-color: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #FCA5A5;
+}
+.dark .alert-warning {
+    background-color: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #FCD34D;
+}
+.dark .alert-info {
+    background-color: rgba(56, 119, 128, 0.15);
+    border-color: rgba(56, 119, 128, 0.3);
+    color: #5EEAD4;
 }
 
 h1, h2, h3, h4, h5, h6 {

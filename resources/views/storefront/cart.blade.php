@@ -12,57 +12,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 
     <!-- Scripts & Styles via Vite -->
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <style>
-        body {
-            font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
-            background-color: #F8F9FA;
-            color: #353535;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-tactile {
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-tactile:active {
-            transform: scale(0.97);
-        }
-    </style>
 </head>
-<body class="min-h-full flex flex-col antialiased selection:bg-[#3C6E71]/30 selection:text-[#353535] pb-44 lg:pb-12"
+<body class="min-h-full flex flex-col antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 pb-44 lg:pb-12 transition-colors"
       x-data="cartPage()"
       x-init="init()">
 
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#353535]/10 shadow-xs">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('storefront.menu') }}" class="w-10 h-10 rounded-xl bg-[#F7F9FA] border border-[#353535]/15 flex items-center justify-center text-[#353535] hover:bg-[#3C6E71]/15 transition-colors btn-tactile" title="بازگشت به منو">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </a>
-                <div>
-                    <h1 class="text-base sm:text-lg font-black text-[#353535]">سبد خرید شما</h1>
-                    <p class="text-[11px] text-[#353535]/65" x-text="cart.length > 0 ? (cartCount() + ' آیتم انتخاب‌شده') : 'خالی'"></p>
-                </div>
-            </div>
-
-            <!-- Quick Action Links -->
-            <div class="flex items-center gap-2">
-                <a href="{{ route('storefront.menu') }}" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F7F9FA]/80 hover:bg-[#F7F9FA] text-[#353535] text-xs font-bold border border-[#353535]/15 btn-tactile">
-                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
-                    <span>افزودن آیتم‌های بیشتر</span>
-                </a>
-
-                <template x-if="cart.length > 0">
-                    <button @click="clearCart()" type="button" class="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors btn-tactile flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        <span class="hidden sm:inline">خالی کردن سبد</span>
-                    </button>
-                </template>
-            </div>
-        </div>
-    </header>
+    <!-- Unified Global Navigation Header -->
+    <x-storefront-header :activeTab="'cart'" />
 
     <!-- Main Content Container -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
@@ -397,6 +355,7 @@
     }
     </script>
 
+    <x-storefront-footer />
     <x-toast-container />
 </body>
 </html>

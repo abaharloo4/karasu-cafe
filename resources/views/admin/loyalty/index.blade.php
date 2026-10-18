@@ -15,10 +15,6 @@
             </h1>
             <p class="text-xs text-[#353535]/60 mt-1">لول‌بندی مشتریان، کش‌بک، و تنظیمات پاداش</p>
         </div>
-            <a href="{{ route('admin.loyalty.wheel-prizes') }}" class="px-4 py-2.5 bg-[#E29578] hover:bg-[#D08366] text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-2 min-h-[44px]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V4m0 4l3-3m-3 3l-3-3m12 7a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>گردونه شانس</span>
-            </a>
             <a href="{{ route('admin.loyalty.tiers') }}" class="px-4 py-2.5 bg-[#284B63] hover:bg-[#1E374A] text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-2 min-h-[44px]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <span>مدیریت لول‌ها</span>

@@ -37,8 +37,8 @@ class ReceiptSettingController extends Controller
         $setting = ReceiptSetting::getForCafe($cafeId);
 
         $validated = $request->validate([
-            'paper_width' => 'required|in:80mm,58mm',
-            'font_family' => 'required|in:vazirmatn,shabnam,iransans,b_titr,courier',
+            'paper_width' => 'required|in:80mm,58mm,a4',
+            'font_family' => 'required|in:vazirmatn,post,shabnam,iransans,b_titr,courier',
             'font_size' => 'required|in:compact,medium,large',
             'header_title' => 'required|string|max:150',
             'header_subtitle' => 'nullable|string|max:200',

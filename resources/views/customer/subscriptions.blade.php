@@ -27,69 +27,175 @@
             $sub = $customer->activeSubscription;
             $percent = $sub->total_items > 0 ? round(($sub->remaining_items / $sub->total_items) * 100) : 0;
             $usedItems = max(0, $sub->total_items - $sub->remaining_items);
+            $subCode = 'BCAFE-SUB-' . str_pad($sub->id, 5, '0', STR_PAD_LEFT);
+            $qrData = "BCAFE:SUB:{$sub->id}:{$customer->phone}";
+            $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=" . urlencode($qrData);
         @endphp
-        <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-l from-[#353535] to-[#284B63] text-white shadow-md relative overflow-hidden space-y-6">
-            <div class="absolute -end-10 -bottom-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none"></div>
+        <div x-data="{ showPassModal: false, copiedCode: false }" class="space-y-4">
+            <div class="p-6 sm:p-7 rounded-3xl bg-gradient-to-l from-[#353535] via-[#2D4552] to-[#284B63] text-white shadow-xl relative overflow-hidden space-y-6 border border-white/10">
+                <div class="absolute -end-10 -bottom-10 w-56 h-56 rounded-full bg-white/5 pointer-events-none"></div>
 
-            <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <span class="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>اشتراک فعال</span>
-                        </span>
-                        <span class="text-xs text-white/70">بی کافه شیراز</span>
+                <div class="flex flex-wrap items-center justify-between gap-4 relative z-10">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-xl text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>اشتراک فعال</span>
+                            </span>
+                            <span class="text-xs text-white/70">بی کافه شیراز</span>
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-black text-white mt-1">
+                            {{ $sub->plan->name ?? 'اشتراک ماهانه قهوه تخصصی' }}
+                        </h2>
                     </div>
-                    <h2 class="text-xl sm:text-2xl font-black text-white mt-1">
-                        {{ $sub->plan->name ?? 'اشتراک ماهانه قهوه' }}
-                    </h2>
+
+                    <div class="flex items-center gap-2.5">
+                        <!-- In-Person Digital Pass Trigger -->
+                        <button type="button"
+                                @click="showPassModal = true"
+                                class="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white font-black text-xs rounded-2xl btn-tactile border border-white/20 shadow-xs flex items-center gap-2 transition-all">
+                            <svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                            <span>کارت عضویت حضوری (QR)</span>
+                        </button>
+
+                        <a href="{{ route('storefront.menu') }}" class="px-5 py-2.5 bg-[#3C6E71] hover:bg-[#2E585B] text-white font-black text-xs rounded-2xl btn-tactile shadow-md flex items-center gap-2 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            <span>سفارش آنلاین با سهمیه</span>
+                        </a>
+                    </div>
                 </div>
 
-                <a href="{{ route('storefront.menu') }}" class="px-5 py-3 bg-[#3C6E71] hover:bg-[#2E585B] text-white font-black text-xs rounded-2xl btn-tactile shadow-md flex items-center gap-2 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                    <span>سفارش قهوه امروز (سهمیه)</span>
-                </a>
+                <!-- Today's Quota Live Status Pill -->
+                <div class="relative z-10 p-3.5 rounded-2xl {{ $hasUsedToday ? 'bg-amber-500/15 border-amber-400/30 text-amber-200' : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-200' }} border flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5 font-bold">
+                        @if($hasUsedToday)
+                            <svg class="w-4 h-4 text-amber-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>سهمیه امروز شما استفاده شده است. فردا صبح فنجان جدید برای شما فعال خواهد شد.</span>
+                        @else
+                            <svg class="w-4 h-4 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>سهمیه ۱ فنجان قهوه امروز شما آماده استفاده است! می‌توانید حضوری یا آنلاین سفارش دهید.</span>
+                        @endif
+                    </div>
+                    <span class="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-black/20 text-white/80 border border-white/10 hidden sm:inline-block">
+                        {{ $subCode }}
+                    </span>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
+                        <span class="text-[10px] text-white/70 block">فنجان‌های باقی‌مونده:</span>
+                        <div class="text-lg sm:text-xl font-black text-emerald-300 tabular-nums mt-0.5">
+                            {{ $sub->remaining_items }} <span class="text-xs text-white/60">فنجان</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
+                        <span class="text-[10px] text-white/70 block">نوشیده شده:</span>
+                        <div class="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">
+                            {{ $usedItems }} <span class="text-xs text-white/60">فنجان</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
+                        <span class="text-[10px] text-white/70 block">کل سهمیه پلن:</span>
+                        <div class="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">
+                            {{ $sub->total_items }} <span class="text-xs text-white/60">فنجان</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
+                        <span class="text-[10px] text-white/70 block">اعتبار تا:</span>
+                        <div class="text-sm font-black text-white tabular-nums mt-1.5" dir="ltr">
+                            {{ $sub->expire_date }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Meter -->
+                <div class="space-y-2 relative z-10 pt-1">
+                    <div class="flex items-center justify-between text-xs text-white/80 font-bold">
+                        <span>وضعیت مصرف سهمیه</span>
+                        <span class="tabular-nums">{{ $percent }}٪ باقی‌مانده</span>
+                    </div>
+                    <div class="w-full bg-black/30 h-3 rounded-full overflow-hidden p-0.5">
+                        <div class="bg-gradient-to-r from-emerald-400 to-[#3C6E71] h-full rounded-full transition-all duration-700" style="width: {{ $percent }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Allowed Coffees for this plan -->
+                @if($sub->plan && $sub->plan->products && $sub->plan->products->isNotEmpty())
+                <div class="pt-2 border-t border-white/15 relative z-10">
+                    <span class="text-[11px] text-white/70 font-bold block mb-2">قهوه‌های تحت پوشش این اشتراک:</span>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($sub->plan->products as $allowedProduct)
+                            <span class="px-2.5 py-1 rounded-xl bg-white/10 border border-white/15 text-[11px] font-bold text-white flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#3C6E71]"></span>
+                                <span>{{ $allowedProduct->name }}</span>
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
 
-            <!-- Stats Bar -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
-                <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
-                    <span class="text-[10px] text-white/70 block">فنجان‌های باقی‌مونده:</span>
-                    <div class="text-lg sm:text-xl font-black text-emerald-300 tabular-nums mt-0.5">
-                        {{ $sub->remaining_items }} <span class="text-xs text-white/60">فنجان</span>
-                    </div>
-                </div>
+            <!-- In-Person Digital Member Pass Modal -->
+            <div x-show="showPassModal"
+                 x-cloak
+                 class="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+                 @keydown.escape.window="showPassModal = false">
+                <div class="bg-gradient-to-b from-[#1C2526] to-[#121819] text-white max-w-sm w-full rounded-3xl p-6 shadow-2xl border border-white/15 space-y-5 relative"
+                     @click.away="showPassModal = false">
+                    
+                    <!-- Close Button -->
+                    <button type="button" @click="showPassModal = false" class="absolute top-4 end-4 text-white/50 hover:text-white p-1 rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
 
-                <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
-                    <span class="text-[10px] text-white/70 block">نوشیده شده:</span>
-                    <div class="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">
-                        {{ $usedItems }} <span class="text-xs text-white/60">فنجان</span>
+                    <!-- Pass Header -->
+                    <div class="text-center space-y-1">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-black tracking-wider uppercase">
+                            <span>کارت عضویت بی کافه</span>
+                        </div>
+                        <h3 class="text-lg font-black text-white pt-1">B CAFE PASSBOOK</h3>
+                        <p class="text-xs text-white/60">{{ $sub->plan->name ?? 'اشتراک روزانه قهوه' }}</p>
                     </div>
-                </div>
 
-                <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
-                    <span class="text-[10px] text-white/70 block">کل سهمیه پلن:</span>
-                    <div class="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">
-                        {{ $sub->total_items }} <span class="text-xs text-white/60">فنجان</span>
+                    <!-- Pass QR Code Container -->
+                    <div class="bg-white p-4 rounded-2xl shadow-inner flex flex-col items-center justify-center space-y-2">
+                        <img src="{{ $qrUrl }}" alt="QR Code اشتراک" class="w-48 h-48 object-contain">
+                        <span class="text-[10px] text-slate-500 font-mono tracking-widest font-black" dir="ltr">{{ $subCode }}</span>
                     </div>
-                </div>
 
-                <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/15">
-                    <span class="text-[10px] text-white/70 block">اعتبار تا:</span>
-                    <div class="text-sm font-black text-white tabular-nums mt-1.5" dir="ltr">
-                        {{ $sub->expire_date }}
+                    <!-- Customer Info & Copy -->
+                    <div class="space-y-2 bg-white/5 p-3.5 rounded-2xl border border-white/10 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/60">نام مشترک:</span>
+                            <span class="font-bold text-white">{{ $customer->name }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/60">شماره همراه:</span>
+                            <span class="font-mono font-bold text-white" dir="ltr">{{ $customer->phone }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-white/60">سهمیه باقی‌مانده:</span>
+                            <span class="font-bold text-emerald-400">{{ $sub->remaining_items }} فنجان</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-white/10">
+                            <span class="text-white/60">کد جهت ثبت دستی:</span>
+                            <button type="button"
+                                    @click="navigator.clipboard.writeText('{{ $subCode }}'); copiedCode = true; setTimeout(() => copiedCode = false, 2000)"
+                                    class="text-[11px] font-mono text-emerald-300 hover:text-white flex items-center gap-1 font-bold">
+                                <span>{{ $subCode }}</span>
+                                <span x-show="!copiedCode"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></span>
+                                <span x-show="copiedCode" class="text-emerald-400 text-[10px]">کپی شد!</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Progress Meter -->
-            <div class="space-y-2 relative z-10 pt-1">
-                <div class="flex items-center justify-between text-xs text-white/80 font-bold">
-                    <span>وضعیت مصرف سهمیه</span>
-                    <span class="tabular-nums">{{ $percent }}٪ باقی‌مانده</span>
-                </div>
-                <div class="w-full bg-black/30 h-3 rounded-full overflow-hidden p-0.5">
-                    <div class="bg-gradient-to-r from-emerald-400 to-[#3C6E71] h-full rounded-full transition-all duration-700" style="width: {{ $percent }}%"></div>
+                    <p class="text-[11px] text-white/50 text-center leading-relaxed">
+                        این کارت را هنگام سفارش حضوری روی کانتر به باریستا نشان دهید تا سهمیه روزانه شما با اسکنر ثبت شود.
+                    </p>
                 </div>
             </div>
         </div>

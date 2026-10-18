@@ -1,3 +1,4 @@
+import './theme';
 import Alpine from 'alpinejs';
 import './toast';
 import './pwa';

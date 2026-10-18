@@ -51,6 +51,9 @@ $tablesWithData = [
     'loyalty_settings',
     'receipt_settings',
     'pwa_settings',
+    'fulfillment_settings',
+    'payment_gateways',
+    'site_content_settings',
     'migrations'
 ];
 

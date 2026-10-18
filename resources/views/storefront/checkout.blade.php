@@ -14,25 +14,29 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body x-data="checkoutPage()" class="min-h-full antialiased selection:bg-[#3C6E71] selection:text-[#F7F9FA] pt-4 sm:pt-8 pb-36 lg:pb-16 px-4 sm:px-6 lg:px-8">
+<body x-data="checkoutPage()" class="min-h-full antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 pt-4 sm:pt-8 pb-36 lg:pb-16 px-4 sm:px-6 lg:px-8 transition-colors">
 
     <div class="max-w-6xl mx-auto space-y-6">
 
         <!-- Top Header Navigation -->
-        <header class="flex items-center justify-between border-b border-[#353535]/10 pb-4">
-            <a href="{{ route('storefront.menu') }}" class="inline-flex items-center gap-2 text-xs font-bold text-[#353535] hover:text-[#284B63] btn-tactile min-h-[44px]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <header class="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
+            <a href="{{ route('storefront.menu') }}" class="inline-flex items-center gap-2 text-xs font-bold text-[#19242B] dark:text-slate-200 hover:text-[#387780] dark:hover:text-teal-400 btn-tactile min-h-[44px]">
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 <span>بازگشت به منوی بی کافه</span>
             </a>
 
             <div class="flex items-center gap-3">
+                <!-- Dark / Light Mode Switcher Toggle Button -->
+                <x-theme-toggle />
+
                 <div class="text-end hidden sm:block">
-                    <span class="text-xs font-black text-[#353535] block">بی کافه (B Cafe)</span>
-                    <span class="text-[10px] text-[#353535]/65">شعبه شیراز • ثبت آنلاین سفارش</span>
+                    <span class="text-xs font-black text-[#19242B] dark:text-slate-100 block">بی کافه (B Cafe)</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400">شعبه شیراز • ثبت آنلاین سفارش</span>
                 </div>
-                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-10 h-10 rounded-2xl object-cover border border-[#353535]/15 shadow-2xs">
+                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-2xs">
             </div>
         </header>
 
@@ -119,35 +123,83 @@
 
                         <!-- Mode Switcher Cards -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                            @php
+                                $courierMethod = $fulfillmentMethods['courier'] ?? null;
+                                $takeawayMethod = $fulfillmentMethods['takeaway'] ?? null;
+                                $dineInMethod = $fulfillmentMethods['dine_in'] ?? null;
+                            @endphp
+
                             <!-- Dine-in Option -->
-                            <label :class="orderType === 'dine_in' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                   class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
-                                <input type="radio" name="order_type" value="dine_in" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
-                                <div class="space-y-0.5">
-                                    <span class="text-xs font-black text-[#353535] block">سرو در سالن کافه</span>
-                                    <span class="text-[11px] text-[#353535]/65 block">نشستن در سالن یا پشت میز</span>
-                                </div>
-                            </label>
+                            @if(!$dineInMethod || $dineInMethod->status !== 'inactive')
+                                @if($dineInMethod && $dineInMethod->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex flex-col justify-between min-h-[72px]">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="space-y-0.5">
+                                                <span class="text-xs font-black text-slate-700 block">{{ $dineInMethod->title ?? 'سرو در سالن کافه' }}</span>
+                                                <span class="text-[11px] text-slate-500 block">{{ $dineInMethod->coming_soon_note ?: ($dineInMethod->subtitle ?? 'نشستن در سالن یا پشت میز') }}</span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <label :class="orderType === 'dine_in' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                           class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
+                                        <input type="radio" name="order_type" value="dine_in" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs font-black text-[#353535] block">{{ $dineInMethod->title ?? 'سرو در سالن کافه' }}</span>
+                                            <span class="text-[11px] text-[#353535]/65 block">{{ $dineInMethod->subtitle ?? 'نشستن در سالن یا پشت میز' }}</span>
+                                        </div>
+                                    </label>
+                                @endif
+                            @endif
 
                             <!-- Takeaway Option -->
-                            <label :class="orderType === 'takeaway' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                   class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
-                                <input type="radio" name="order_type" value="takeaway" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
-                                <div class="space-y-0.5">
-                                    <span class="text-xs font-black text-[#353535] block">بیرون‌بر (Takeaway)</span>
-                                    <span class="text-[11px] text-[#353535]/65 block">تحویل حضوری از کانتر برای بردن</span>
-                                </div>
-                            </label>
+                            @if(!$takeawayMethod || $takeawayMethod->status !== 'inactive')
+                                @if($takeawayMethod && $takeawayMethod->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex flex-col justify-between min-h-[72px]">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="space-y-0.5">
+                                                <span class="text-xs font-black text-slate-700 block">{{ $takeawayMethod->title ?? 'بیرون‌بر (Takeaway)' }}</span>
+                                                <span class="text-[11px] text-slate-500 block">{{ $takeawayMethod->coming_soon_note ?: ($takeawayMethod->subtitle ?? 'تحویل حضوری از کانتر برای بردن') }}</span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <label :class="orderType === 'takeaway' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                           class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
+                                        <input type="radio" name="order_type" value="takeaway" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs font-black text-[#353535] block">{{ $takeawayMethod->title ?? 'بیرون‌بر (Takeaway)' }}</span>
+                                            <span class="text-[11px] text-[#353535]/65 block">{{ $takeawayMethod->subtitle ?? 'تحویل حضوری از کانتر برای بردن' }}</span>
+                                        </div>
+                                    </label>
+                                @endif
+                            @endif
 
                             <!-- Courier Option -->
-                            <label :class="orderType === 'courier' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                   class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
-                                <input type="radio" name="order_type" value="courier" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
-                                <div class="space-y-0.5">
-                                    <span class="text-xs font-black text-[#353535] block">ارسال با پیک (شیراز)</span>
-                                    <span class="text-[11px] text-[#353535]/65 block">بسته‌بندی محکم و ارسال به آدرس شما</span>
-                                </div>
-                            </label>
+                            @if(!$courierMethod || $courierMethod->status !== 'inactive')
+                                @if($courierMethod && $courierMethod->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex flex-col justify-between min-h-[72px]">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="space-y-0.5">
+                                                <span class="text-xs font-black text-slate-700 block">{{ $courierMethod->title ?? 'ارسال با پیک (شیراز)' }}</span>
+                                                <span class="text-[11px] text-slate-500 block">{{ $courierMethod->coming_soon_note ?: ($courierMethod->subtitle ?? 'بسته‌بندی محکم و ارسال به آدرس شما') }}</span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <label :class="orderType === 'courier' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                           class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-start gap-3 transition-colors min-h-[72px]">
+                                        <input type="radio" name="order_type" value="courier" x-model="orderType" class="mt-1 text-[#353535] focus:ring-[#3C6E71]">
+                                        <div class="space-y-0.5">
+                                            <span class="text-xs font-black text-[#353535] block">{{ $courierMethod->title ?? 'ارسال با پیک (شیراز)' }}</span>
+                                            <span class="text-[11px] text-[#353535]/65 block">{{ $courierMethod->subtitle ?? 'بسته‌بندی محکم و ارسال به آدرس شما' }}</span>
+                                        </div>
+                                    </label>
+                                @endif
+                            @endif
                         </div>
 
                         <!-- Conditional: Dine-in Table Number -->
@@ -256,123 +308,174 @@
                         </div>
 
                         <div class="space-y-3">
+                            @php
+                                $zarinpalGw = $gateways['zarinpal'] ?? null;
+                                $cardToCardGw = $gateways['card_to_card'] ?? null;
+                                $cashGw = $gateways['cash'] ?? null;
+                            @endphp
+
                             <!-- Zarinpal Gateway -->
-                            @if($gateways['zarinpal']->is_active ?? true)
-                            <label :class="paymentMethod === 'zarinpal' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                   class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-center justify-between transition-colors min-h-[64px]">
-                                <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="zarinpal" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
-                                    <div>
-                                        <span class="text-xs font-black text-[#353535] block">درگاه پرداخت اینترنتی زرین‌پال (شاپرک)</span>
-                                        <span class="text-[11px] text-[#353535]/65">پرداخت امن آنلاین با کلیه کارت‌های بانکی عضو شتاب</span>
+                            @if(!$zarinpalGw || $zarinpalGw->status !== 'inactive')
+                                @if($zarinpalGw && $zarinpalGw->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex items-center justify-between min-h-[64px]">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-amber-100/80 text-amber-700 flex items-center justify-center font-bold text-xs">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-black text-slate-700 block">درگاه پرداخت اینترنتی زرین‌پال (شاپرک)</span>
+                                                <span class="text-[11px] text-slate-500">{{ $zarinpalGw->coming_soon_note ?: 'به زودی با اتصال به شبکه شاپرک فعال خواهد شد.' }}</span>
+                                            </div>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
                                     </div>
-                                </div>
-                                <span class="text-[11px] text-[#3C6E71] font-black bg-[#3C6E71]/15 px-2.5 py-1 rounded-lg border border-[#3C6E71]/20">تایید آنی</span>
-                            </label>
+                                @else
+                                    <label :class="paymentMethod === 'zarinpal' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                           class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-center justify-between transition-colors min-h-[64px]">
+                                        <div class="flex items-center gap-3">
+                                            <input type="radio" name="payment_method" value="zarinpal" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
+                                            <div>
+                                                <span class="text-xs font-black text-[#353535] block">درگاه پرداخت اینترنتی زرین‌پال (شاپرک)</span>
+                                                <span class="text-[11px] text-[#353535]/65">پرداخت امن آنلاین با کلیه کارت‌های بانکی عضو شتاب</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[11px] text-[#3C6E71] font-black bg-[#3C6E71]/15 px-2.5 py-1 rounded-lg border border-[#3C6E71]/20">تایید آنی</span>
+                                    </label>
+                                @endif
                             @endif
 
                             <!-- Card to Card -->
-                            @if($gateways['card_to_card']->is_active ?? true)
-                            <div :class="paymentMethod === 'card_to_card' ? 'border-[#353535] bg-white ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                 class="p-4 rounded-2xl border-2 space-y-3 transition-colors">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <input type="radio" name="payment_method" value="card_to_card" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
-                                        <div>
-                                            <span class="text-xs font-black text-[#353535] block">کارت به کارت بانکی</span>
-                                            <span class="text-[11px] text-[#353535]/65">واریز مستقیم به شماره کارت کافه و آپلود تصویر فیش واریزی</span>
+                            @if(!$cardToCardGw || $cardToCardGw->status !== 'inactive')
+                                @if($cardToCardGw && $cardToCardGw->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex items-center justify-between min-h-[64px]">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-amber-100/80 text-amber-700 flex items-center justify-center font-bold text-xs">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-black text-slate-700 block">کارت به کارت بانکی</span>
+                                                <span class="text-[11px] text-slate-500">{{ $cardToCardGw->coming_soon_note ?: 'واریز کارت‌به‌کارت به زودی در دسترس قرار می‌گیرد.' }}</span>
+                                            </div>
                                         </div>
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
                                     </div>
-                                    <span class="text-[11px] text-[#284B63] font-black bg-[#284B63]/15 px-2.5 py-1 rounded-lg border border-[#284B63]/30">تایید باریستا</span>
-                                </label>
-
-                                <!-- Card to Card Details & Upload Form -->
-                                <div x-show="paymentMethod === 'card_to_card'" x-transition class="pt-3 border-t border-[#353535]/10 space-y-3">
-                                    <div class="p-3.5 rounded-xl bg-[#F7F9FA]/80 border border-[#3C6E71]/40 text-xs space-y-1.5">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-black text-[#353535]">شماره کارت بی کافه:</span>
-                                            <button type="button" @click="navigator.clipboard.writeText('{{ $gateways['card_to_card']->settings['card_number'] ?? '۶۲۱۹-xxxx-xxxx-xxxx' }}'); copiedCard = true; setTimeout(() => copiedCard = false, 2500)" class="text-[11px] font-bold flex items-center gap-1 min-h-[36px] transition-colors" :class="copiedCard ? 'text-[#3C6E71]' : 'text-[#284B63] hover:underline'">
-                                                <span x-text="copiedCard ? 'شماره کارت کپی شد ✓' : 'کپی شماره کارت'"></span>
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                            </button>
-                                        </div>
-                                        <div class="font-mono text-sm font-black text-[#353535] dir-ltr text-center tracking-widest bg-white py-1.5 rounded-lg border border-[#3C6E71]/30">
-                                            {{ $gateways['card_to_card']->settings['card_number'] ?? '۶۲۱۹-xxxx-xxxx-xxxx' }}
-                                        </div>
-                                        <div class="text-[11px] text-[#353535]/65 flex items-center justify-between">
-                                            <span>به نام: {{ $gateways['card_to_card']->settings['account_owner'] ?? 'کافه بی' }}</span>
-                                            <span>بانک: {{ $gateways['card_to_card']->settings['bank_name'] ?? 'بانک سامان' }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-xs font-bold text-[#353535] mb-1">شماره پیگیری واریز</label>
-                                            <input type="text" name="tracking_number" placeholder="مثلاً: ۱۲۳۴۵۶" dir="ltr"
-                                                   class="w-full px-3 py-2.5 rounded-xl bg-white border border-[#353535]/15 text-[#353535] text-xs font-mono text-start tabular-nums focus:outline-none focus:border-[#3C6E71] focus:ring-1 focus:ring-[#3C6E71] transition-colors min-h-[44px]">
-                                        </div>
-                                        <div x-data="{ fileName: '', preview: '', dragging: false }">
-                                            <label class="block text-xs font-bold text-[#353535] mb-1">عکس فیش یا رسید واریز</label>
-                                            <div class="relative"
-                                                 @dragover.prevent="dragging = true"
-                                                 @dragleave.prevent="dragging = false"
-                                                 @drop.prevent="dragging = false; const f = $event.dataTransfer.files[0]; if(f) { $refs.receiptInput.files = $event.dataTransfer.files; fileName = f.name; if(f.type.startsWith('image/')) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); } }">
-                                                <input type="file" name="receipt_image" accept="image/*" x-ref="receiptInput"
-                                                       @change="const f = $event.target.files[0]; if(f) { fileName = f.name; if(f.type.startsWith('image/')) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); } } else { fileName = ''; preview = ''; }"
-                                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-
-                                                <!-- Empty state -->
-                                                <div x-show="!fileName"
-                                                     :class="dragging ? 'border-[#3C6E71] bg-[#3C6E71]/5' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                                     class="w-full p-4 rounded-xl border-2 border-dashed text-center transition-colors min-h-[80px] flex flex-col items-center justify-center gap-1.5">
-                                                    <svg class="w-6 h-6 text-[#284B63]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                    <span class="text-[11px] font-bold text-[#353535]/55">عکس فیش رو اینجا بنداز یا کلیک کن</span>
+                                @else
+                                    <div :class="paymentMethod === 'card_to_card' ? 'border-[#353535] bg-white ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                         class="p-4 rounded-2xl border-2 space-y-3 transition-colors">
+                                        <label class="flex items-center justify-between cursor-pointer">
+                                            <div class="flex items-center gap-3">
+                                                <input type="radio" name="payment_method" value="card_to_card" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
+                                                <div>
+                                                    <span class="text-xs font-black text-[#353535] block">کارت به کارت بانکی</span>
+                                                    <span class="text-[11px] text-[#353535]/65">واریز مستقیم به شماره کارت کافه و آپلود تصویر فیش واریزی</span>
                                                 </div>
+                                            </div>
+                                            <span class="text-[11px] text-[#284B63] font-black bg-[#284B63]/15 px-2.5 py-1 rounded-lg border border-[#284B63]/30">تایید باریستا</span>
+                                        </label>
 
-                                                <!-- File selected state -->
-                                                <div x-show="fileName" x-cloak class="w-full p-3 rounded-xl border border-[#3C6E71]/40 bg-[#3C6E71]/5 min-h-[80px]">
-                                                    <div class="flex items-center gap-3">
-                                                        <template x-if="preview">
-                                                            <img :src="preview" class="w-14 h-14 object-cover rounded-lg border border-[#D9D9D9] flex-shrink-0">
-                                                        </template>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="text-xs font-bold text-[#353535] truncate" x-text="fileName"></div>
-                                                            <div class="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
-                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                                                <span>آماده ارسال</span>
+                                        <!-- Card to Card Details & Upload Form -->
+                                        <div x-show="paymentMethod === 'card_to_card'" x-transition class="pt-3 border-t border-[#353535]/10 space-y-3">
+                                            <div class="p-3.5 rounded-xl bg-[#F7F9FA]/80 border border-[#3C6E71]/40 text-xs space-y-1.5">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-black text-[#353535]">شماره کارت بی کافه:</span>
+                                                    <button type="button" @click="navigator.clipboard.writeText('{{ $gateways['card_to_card']->settings['card_number'] ?? '۶۲۱۹-xxxx-xxxx-xxxx' }}'); copiedCard = true; setTimeout(() => copiedCard = false, 2500)" class="text-[11px] font-bold flex items-center gap-1 min-h-[36px] transition-colors" :class="copiedCard ? 'text-[#3C6E71]' : 'text-[#284B63] hover:underline'">
+                                                        <span x-text="copiedCard ? 'شماره کارت کپی شد ✓' : 'کپی شماره کارت'"></span>
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                    </button>
+                                                </div>
+                                                <div class="font-mono text-sm font-black text-[#353535] dir-ltr text-center tracking-widest bg-white py-1.5 rounded-lg border border-[#3C6E71]/30">
+                                                    {{ $gateways['card_to_card']->settings['card_number'] ?? '۶۲۱۹-xxxx-xxxx-xxxx' }}
+                                                </div>
+                                                <div class="text-[11px] text-[#353535]/65 flex items-center justify-between">
+                                                    <span>به نام: {{ $gateways['card_to_card']->settings['account_owner'] ?? 'کافه بی' }}</span>
+                                                    <span>بانک: {{ $gateways['card_to_card']->settings['bank_name'] ?? 'بانک سامان' }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-[#353535] mb-1">شماره پیگیری واریز</label>
+                                                    <input type="text" name="tracking_number" placeholder="مثلاً: ۱۲۳۴۵۶" dir="ltr"
+                                                           class="w-full px-3 py-2.5 rounded-xl bg-white border border-[#353535]/15 text-[#353535] text-xs font-mono text-start tabular-nums focus:outline-none focus:border-[#3C6E71] focus:ring-1 focus:ring-[#3C6E71] transition-colors min-h-[44px]">
+                                                </div>
+                                                <div x-data="{ fileName: '', preview: '', dragging: false }">
+                                                    <label class="block text-xs font-bold text-[#353535] mb-1">عکس فیش یا رسید واریز</label>
+                                                    <div class="relative"
+                                                         @dragover.prevent="dragging = true"
+                                                         @dragleave.prevent="dragging = false"
+                                                         @drop.prevent="dragging = false; const f = $event.dataTransfer.files[0]; if(f) { $refs.receiptInput.files = $event.dataTransfer.files; fileName = f.name; if(f.type.startsWith('image/')) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); } }">
+                                                        <input type="file" name="receipt_image" accept="image/*" x-ref="receiptInput"
+                                                               @change="const f = $event.target.files[0]; if(f) { fileName = f.name; if(f.type.startsWith('image/')) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); } } else { fileName = ''; preview = ''; }"
+                                                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                                                        <!-- Empty state -->
+                                                        <div x-show="!fileName"
+                                                             :class="dragging ? 'border-[#3C6E71] bg-[#3C6E71]/5' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                                             class="w-full p-4 rounded-xl border-2 border-dashed text-center transition-colors min-h-[80px] flex flex-col items-center justify-center gap-1.5">
+                                                            <svg class="w-6 h-6 text-[#284B63]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                            <span class="text-[11px] font-bold text-[#353535]/55">عکس فیش رو اینجا بنداز یا کلیک کن</span>
+                                                        </div>
+
+                                                        <!-- File selected state -->
+                                                        <div x-show="fileName" x-cloak class="w-full p-3 rounded-xl border border-[#3C6E71]/40 bg-[#3C6E71]/5 min-h-[80px]">
+                                                            <div class="flex items-center gap-3">
+                                                                <template x-if="preview">
+                                                                    <img :src="preview" class="w-14 h-14 object-cover rounded-lg border border-[#D9D9D9] flex-shrink-0">
+                                                                </template>
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="text-xs font-bold text-[#353535] truncate" x-text="fileName"></div>
+                                                                    <div class="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
+                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                                        <span>آماده ارسال</span>
+                                                                    </div>
+                                                                </div>
+                                                                <button type="button" @click.stop="$refs.receiptInput.value = ''; fileName = ''; preview = '';"
+                                                                        class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-rose-50 text-[#353535]/40 hover:text-rose-600 transition-colors flex-shrink-0 relative z-20">
+                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <button type="button" @click.stop="$refs.receiptInput.value = ''; fileName = ''; preview = '';"
-                                                                class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-rose-50 text-[#353535]/40 hover:text-rose-600 transition-colors flex-shrink-0 relative z-20">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                @endif
                             @endif
 
                             <!-- Cash on delivery / In-store POS -->
-                            @if($gateways['cash']->is_active ?? true)
-                            <div :class="paymentMethod === 'cash' ? 'border-[#353535] bg-white ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                 class="p-4 rounded-2xl border-2 transition-colors">
-                                <label class="flex items-center justify-between cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <input type="radio" name="payment_method" value="cash" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
-                                        <div>
-                                            <span class="text-xs font-black text-[#353535] block">پرداخت در محل / کارتخوان سیار و حضوری</span>
-                                            <span class="text-[11px] text-[#353535]/65" x-text="orderType === 'dine_in' ? 'پرداخت نقدی یا با دستگاه کارتخوان روی کانتر کافه' : 'پرداخت با کارتخوان سیار پیک هنگام تحویل سفارش در شیراز'"></span>
+                            @if(!$cashGw || $cashGw->status !== 'inactive')
+                                @if($cashGw && $cashGw->isComingSoon())
+                                    <div class="p-4 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50/40 opacity-80 cursor-not-allowed flex items-center justify-between min-h-[64px]">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-xl bg-amber-100/80 text-amber-700 flex items-center justify-center font-bold text-xs">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            </div>
+                                            <div>
+                                                <span class="text-xs font-black text-slate-700 block">پرداخت در محل / کارتخوان سیار و حضوری</span>
+                                                <span class="text-[11px] text-slate-500">{{ $cashGw->coming_soon_note ?: 'دستگاه کارتخوان سیار به زودی به ناوگان تحویل اضافه می‌شود.' }}</span>
+                                            </div>
                                         </div>
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 border border-amber-500 shadow-2xs animate-pulse">به‌زودی</span>
                                     </div>
-                                    <span class="text-[11px] text-[#3C6E71] font-black bg-[#3C6E71]/15 px-2.5 py-1 rounded-lg border border-[#3C6E71]/30">تسویه در محل</span>
-                                </label>
-                            </div>
+                                @else
+                                    <div :class="paymentMethod === 'cash' ? 'border-[#353535] bg-white ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                         class="p-4 rounded-2xl border-2 transition-colors">
+                                        <label class="flex items-center justify-between cursor-pointer">
+                                            <div class="flex items-center gap-3">
+                                                <input type="radio" name="payment_method" value="cash" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
+                                                <div>
+                                                    <span class="text-xs font-black text-[#353535] block">پرداخت در محل / کارتخوان سیار و حضوری</span>
+                                                    <span class="text-[11px] text-[#353535]/65" x-text="orderType === 'dine_in' ? 'پرداخت نقدی یا با دستگاه کارتخوان روی کانتر کافه' : 'پرداخت با کارتخوان سیار پیک هنگام تحویل سفارش در شیراز'"></span>
+                                                </div>
+                                            </div>
+                                            <span class="text-[11px] text-[#3C6E71] font-black bg-[#3C6E71]/15 px-2.5 py-1 rounded-lg border border-[#3C6E71]/30">تسویه در محل</span>
+                                        </label>
+                                    </div>
+                                @endif
                             @endif
 
-                            @if(!($gateways['zarinpal']->is_active ?? true) && !($gateways['card_to_card']->is_active ?? true) && !($gateways['cash']->is_active ?? true))
+                            @if((!$zarinpalGw || $zarinpalGw->isInactive()) && (!$cardToCardGw || $cardToCardGw->isInactive()) && (!$cashGw || $cashGw->isInactive()))
                             <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs text-center font-bold">
                                 در حال حاضر کلیه روش‌های پرداخت عمومی توسط کافه غیرفعال شده‌اند.
                             </div>
@@ -380,18 +483,23 @@
 
                             <!-- Subscription Credit (Strictly in-person / takeaway) -->
                             @if($activeSubscription ?? false)
-                            <div x-show="orderType !== 'courier'" x-transition>
-                                <label :class="paymentMethod === 'subscription_credit' ? 'border-[#353535] bg-[#3C6E71]/10 ring-1 ring-[#353535]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
-                                       class="p-4 rounded-2xl border-2 cursor-pointer btn-tactile flex items-center justify-between transition-colors min-h-[64px]">
-                                    <div class="flex items-center gap-3">
-                                        <input type="radio" name="payment_method" value="subscription_credit" x-model="paymentMethod" class="text-[#353535] focus:ring-[#3C6E71]">
-                                        <div>
-                                            <span class="text-xs font-black text-[#353535] block">استفاده از سهمیه اشتراک قهوه روزانه</span>
-                                            <span class="text-[11px] text-[#353535]/65">اعتبار باقی‌مانده: {{ $activeSubscription->remaining_items }} آیتم (کسر هزینه ۱ فنجان از فاکتور)</span>
+                            <div x-show="orderType !== 'courier'" x-transition class="space-y-2">
+                                <div :class="useSubscriptionCredit ? 'border-[#3C6E71] bg-[#3C6E71]/10 ring-1 ring-[#3C6E71]' : 'border-[#353535]/15 bg-white hover:border-[#3C6E71]/50'"
+                                     class="p-4 rounded-2xl border-2 transition-colors">
+                                    <label class="flex items-center justify-between cursor-pointer select-none">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" name="use_subscription_credit" value="1" x-model="useSubscriptionCredit" class="w-4 h-4 rounded text-[#3C6E71] focus:ring-[#3C6E71]">
+                                            <div>
+                                                <span class="text-xs font-black text-[#353535] block">کسر سهمیه اشتراک روزانه (۱ فنجان رایگان)</span>
+                                                <span class="text-[11px] text-[#353535]/65">اعتبار باقی‌مانده: {{ $activeSubscription->remaining_items }} فنجان | هزینه ۱ فنجان قهوه از فاکتور شما کسر می‌شود.</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <span class="text-[11px] text-[#3C6E71] font-bold bg-[#3C6E71]/15 px-2.5 py-1 rounded-lg border border-[#3C6E71]/30">سهمیه روزانه</span>
-                                </label>
+                                        <span class="text-[11px] text-[#3C6E71] font-black bg-white px-2.5 py-1 rounded-lg border border-[#3C6E71]/30 shadow-2xs">سهمیه روزانه</span>
+                                    </label>
+                                    <template x-if="useSubscriptionCredit && subscriptionDiscount === 0 && cart.length > 0">
+                                        <p class="text-[10px] text-amber-700 font-bold ps-7 pt-1">توجه: فنجان قهوه منطبق با پلن اشتراک شما در سبد خرید یافت نشد.</p>
+                                    </template>
+                                </div>
                             </div>
                             <div x-show="orderType === 'courier'" class="p-3 rounded-xl bg-slate-100 text-slate-500 text-[11px] flex items-center gap-2">
                                 <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -511,6 +619,11 @@
                             <div x-show="orderType === 'dine_in'" class="flex items-center justify-between text-[#353535]/70">
                                 <span>هزینه سرو در کافه:</span>
                                 <span class="font-bold text-[#3C6E71]">رایگان</span>
+                            </div>
+
+                            <div x-show="subscriptionDiscount > 0" class="flex items-center justify-between text-[#3C6E71] font-bold">
+                                <span>سهمیه رایگان اشتراک (۱ فنجان):</span>
+                                <span class="tabular-nums" x-text="'- ' + subscriptionDiscount.toLocaleString('fa-IR') + ' تومان'"></span>
                             </div>
 
                             <div x-show="couponDiscount > 0" class="flex items-center justify-between text-[#4F8A4B] font-bold">
@@ -691,8 +804,24 @@
             useWallet: false,
             customerWalletBalance: {{ (float)($customer->wallet_balance ?? 0) }},
 
+            useSubscriptionCredit: {{ ($activeSubscription ?? false) ? 'true' : 'false' }},
+            hasActiveSubscription: {{ ($activeSubscription ?? false) ? 'true' : 'false' }},
+            allowedSubProductIds: @json(($activeSubscription ?? false) ? $activeSubscription->plan->products->pluck('id')->toArray() : []),
+
             get subtotal() {
                 return this.cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            },
+
+            get subscriptionDiscount() {
+                if (!this.useSubscriptionCredit || !this.hasActiveSubscription || this.orderType === 'courier') return 0;
+                const eligibleItem = this.cart.find(i => {
+                    if (i.type === 'subscription') return false;
+                    const pId = parseInt(i.product_id || i.id);
+                    if (this.allowedSubProductIds.length === 0) return true;
+                    return this.allowedSubProductIds.includes(pId);
+                });
+                if (!eligibleItem) return 0;
+                return (eligibleItem.price || 0);
             },
 
             applyCoupon() {
@@ -739,7 +868,7 @@
             },
 
             get payableBeforeWallet() {
-                return Math.max(0, (this.subtotal - this.couponDiscount) + this.deliveryFee);
+                return Math.max(0, (this.subtotal - this.couponDiscount - this.subscriptionDiscount) + this.deliveryFee);
             },
 
             get walletDeduction() {
@@ -799,6 +928,11 @@
                     window.CafeToast.error('لطفاً آدرس دقیق تحویل سفارش در شیراز را وارد فرمایید.', 'آدرس نامشخص');
                     document.querySelector('input[name="address_line"]')?.focus();
                     return;
+                }
+
+                // If fully paid by subscription, lock payment method to subscription_credit
+                if (this.finalPayable === 0 && this.useSubscriptionCredit && this.subscriptionDiscount > 0) {
+                    this.paymentMethod = 'subscription_credit';
                 }
 
                 // Inject dynamic inputs
@@ -870,6 +1004,11 @@
                     const wInput = document.createElement('input');
                     wInput.type = 'hidden'; wInput.name = 'use_wallet'; wInput.value = '1';
                     container.appendChild(wInput);
+                }
+                if (this.useSubscriptionCredit && this.subscriptionDiscount > 0) {
+                    const sInput = document.createElement('input');
+                    sInput.type = 'hidden'; sInput.name = 'use_subscription_credit'; sInput.value = '1';
+                    container.appendChild(sInput);
                 }
             }
         }

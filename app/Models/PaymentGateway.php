@@ -14,6 +14,8 @@ class PaymentGateway extends Model
     protected $fillable = [
         'key',
         'title',
+        'status',
+        'coming_soon_note',
         'is_active',
         'settings',
     ];
@@ -24,6 +26,21 @@ class PaymentGateway extends Model
             'is_active' => 'boolean',
             'settings' => \App\Casts\SafeEncryptedArray::class,
         ];
+    }
+
+    public function isActive(): bool
+    {
+        return ($this->status === 'active' || (empty($this->status) && $this->is_active));
+    }
+
+    public function isComingSoon(): bool
+    {
+        return $this->status === 'coming_soon';
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive' || (!$this->is_active && $this->status !== 'coming_soon');
     }
 
     public static function getSettings(string $key): array

@@ -273,6 +273,8 @@ class LiveOrderController extends Controller
 
         $pushService = app(\App\Services\Pwa\PushNotificationService::class);
         $action = $request->input('action');
+        $rejectAction = $request->input('reject_action', 'cancel_order');
+        $reason = $request->input('reason', 'فیش نامعتبر یا مبلغ واریز نشده است.');
 
         if ($action === 'approve') {
             $cardToCardService->approveReceipt($payment, 'تایید شده توسط باریستا');
@@ -288,18 +290,54 @@ class LiveOrderController extends Controller
                 );
             }
         } else {
-            $reason = $request->input('reason', 'فیش نامعتبر یا مبلغ واریز نشده است.');
-            $cardToCardService->rejectReceipt($payment, $reason);
-            $msg = 'فیش واریزی رد و سفارش لغو گردید.';
+            $cardToCardService->rejectReceipt($payment, $reason, $rejectAction);
 
-            if ($payment->order && $payment->order->customer) {
-                $pushService->send(
-                    $payment->order->customer,
-                    'فیش واریزی رد شد',
-                    "فیش کارت‌به‌کارت سفارش (#{$payment->order->order_number}) تایید نشد: {$reason}",
-                    ['order_id' => $payment->order->id, 'url' => route('storefront.order-status', $payment->order->order_number)],
-                    'order_status'
-                );
+            if ($rejectAction === 'request_reupload') {
+                $msg = 'درخواست بارگذاری مجدد فیش برای مشتری ارسال شد و سفارش فعال باقی ماند.';
+
+                if ($payment->order && $payment->order->customer) {
+                    $pushService->send(
+                        $payment->order->customer,
+                        'درخواست ارسال مجدد فیش بانکی',
+                        "فیش سفارش (#{$payment->order->order_number}) تایید نشد: {$reason}. لطفاً فیش صحیح را مجدداً بارگذاری فرمایید.",
+                        ['order_id' => $payment->order->id, 'url' => route('storefront.order-status', $payment->order->order_number)],
+                        'order_status'
+                    );
+                }
+
+                if ($payment->order) {
+                    try {
+                        app(\App\Services\Sms\OrderSmsNotifier::class)->notifyCustom(
+                            $payment->order,
+                            "بی کافه: فیش واریزی سفارش {$payment->order->order_number} تایید نشد ({$reason}). لطفاً جهت بارگذاری مجدد وارد لینک شوید: " . route('storefront.order-status', $payment->order->order_number)
+                        );
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Re-upload SMS failed: ' . $e->getMessage());
+                    }
+                }
+            } else {
+                $msg = 'فیش واریزی رد و سفارش به طور قطعی لغو گردید.';
+
+                if ($payment->order && $payment->order->customer) {
+                    $pushService->send(
+                        $payment->order->customer,
+                        'سفارش لغو شد',
+                        "فیش کارت‌به‌کارت سفارش (#{$payment->order->order_number}) تایید نشد و سفارش لغو گردید: {$reason}",
+                        ['order_id' => $payment->order->id, 'url' => route('storefront.order-status', $payment->order->order_number)],
+                        'order_status'
+                    );
+                }
+
+                if ($payment->order) {
+                    try {
+                        app(\App\Services\Sms\OrderSmsNotifier::class)->notify(
+                            $payment->order,
+                            \App\Models\SmsSetting::ORDER_STATUS_CANCELLED
+                        );
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Cancel SMS failed: ' . $e->getMessage());
+                    }
+                }
             }
         }
 

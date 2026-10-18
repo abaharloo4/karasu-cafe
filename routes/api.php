@@ -19,14 +19,12 @@ Route::post('/auth/verify-otp', [CustomerAuthApiController::class, 'verifyOtp'])
 
 // Public Loyalty Catalog Endpoints
 Route::get('/loyalty/coupons', [LoyaltyApiController::class, 'getCoupons']);
-Route::get('/loyalty/wheel-prizes', [LoyaltyApiController::class, 'getWheelPrizes']);
 
 // Authenticated Routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     // Authenticated Loyalty Endpoints
     Route::get('/loyalty/points', [LoyaltyApiController::class, 'getPoints']);
     Route::post('/loyalty/redeem-coupon', [LoyaltyApiController::class, 'redeemCoupon']);
-    Route::post('/loyalty/spin-wheel', [LoyaltyApiController::class, 'spinWheel'])->middleware('throttle:10,1');
 
     // Customers API
     Route::get('/customers', [CustomerApiController::class, 'index']);

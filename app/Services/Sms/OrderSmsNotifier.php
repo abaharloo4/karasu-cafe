@@ -77,4 +77,21 @@ class OrderSmsNotifier
             Log::warning("Order SMS notification failed for order {$order->id}: " . $e->getMessage());
         }
     }
+
+    /**
+     * Send a custom text notification to the customer.
+     */
+    public function notifyCustom(Order $order, string $message): void
+    {
+        try {
+            $phone = $order->customer?->phone ?? null;
+            if (!$phone) {
+                return;
+            }
+            \App\Jobs\SendSmsNotificationJob::dispatch('notification', $phone, $message);
+        } catch (\Throwable $e) {
+            Log::warning("Custom order SMS notification failed for order {$order->id}: " . $e->getMessage());
+        }
+    }
 }
+

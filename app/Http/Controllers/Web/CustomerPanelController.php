@@ -234,10 +234,10 @@ class CustomerPanelController extends Controller
     public function subscriptions()
     {
         $customer = auth('customer')->user();
-        $customer->load(['activeSubscription.plan']);
+        $customer->load(['activeSubscription.plan.products']);
 
         $allSubscriptions = $customer->subscriptions()
-            ->with('plan')
+            ->with(['plan.products'])
             ->latest()
             ->get();
 
@@ -248,14 +248,19 @@ class CustomerPanelController extends Controller
             ->get();
 
         $availablePlans = \App\Models\SubscriptionPlan::where('status', 'active')
+            ->with('products')
             ->orderBy('price')
             ->get();
+
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        $hasUsedToday = $customer->activeSubscription ? $subscriptionService->hasUsedToday($customer->activeSubscription) : false;
 
         return view('customer.subscriptions', compact(
             'customer',
             'allSubscriptions',
             'usages',
-            'availablePlans'
+            'availablePlans',
+            'hasUsedToday'
         ));
     }
 
@@ -308,17 +313,6 @@ class CustomerPanelController extends Controller
             'cashbacks',
             'activeCoupons'
         ));
-    }
-
-    /**
-     * Spin the daily lucky wheel in Customer Portal (Disabled).
-     */
-    public function spinWheel(Request $request)
-    {
-        return response()->json([
-            'success' => false,
-            'message' => 'گردونه شانس در حال حاضر غیرفعال است.',
-        ], 403);
     }
 
     /**

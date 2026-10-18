@@ -49,8 +49,9 @@ class StorefrontController extends Controller
             ->get();
 
         $cafe = \App\Models\Cafe::find($cafeId) ?? \App\Models\Cafe::firstOrCreate(['id' => $cafeId]);
+        $siteContent = \App\Models\SiteContentSetting::getForCafe($cafeId);
 
-        return view('storefront.menu', compact('categories', 'customer', 'activeSubscription', 'subscriptionPlans', 'cafe', 'customerFavoriteIds'));
+        return view('storefront.menu', compact('categories', 'customer', 'activeSubscription', 'subscriptionPlans', 'cafe', 'customerFavoriteIds', 'siteContent'));
     }
 
     /**

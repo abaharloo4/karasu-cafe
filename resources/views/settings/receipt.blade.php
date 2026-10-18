@@ -68,15 +68,17 @@
                         <div>
                             <label class="block text-xs font-bold text-[#19242B] mb-1.5">عرض رول حرارتی</label>
                             <select name="paper_width" x-model="form.paper_width" class="w-full px-3 py-2.5 rounded-xl bg-white border border-[#CBD5E1] text-xs font-bold focus:border-[#387780]">
-                                <option value="80mm" {{ old('paper_width', $setting->paper_width) === '80mm' ? 'selected' : '' }}>۸۰ میلی‌متر (استاندارد)</option>
+                                <option value="80mm" {{ old('paper_width', $setting->paper_width) === '80mm' ? 'selected' : '' }}>۸۰ میلی‌متر (رول فیش استاندارد)</option>
                                 <option value="58mm" {{ old('paper_width', $setting->paper_width) === '58mm' ? 'selected' : '' }}>۵۸ میلی‌متر (رول کوچک)</option>
+                                <option value="a4" {{ old('paper_width', $setting->paper_width) === 'a4' ? 'selected' : '' }}>کاغذ A4 / A5 (پرینتر عادی اداری - پر کردن کل کاغذ)</option>
                             </select>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-[#19242B] mb-1.5">فونت فاکتور</label>
                             <select name="font_family" x-model="form.font_family" class="w-full px-3 py-2.5 rounded-xl bg-white border border-[#CBD5E1] text-xs font-bold focus:border-[#387780]">
-                                <option value="vazirmatn" {{ old('font_family', $setting->font_family) === 'vazirmatn' ? 'selected' : '' }}>وزیرمتن (Vazirmatn)</option>
+                                <option value="vazirmatn" {{ old('font_family', $setting->font_family) === 'vazirmatn' ? 'selected' : '' }}>وزیرمتن (Vazirmatn - لوکال و آفلاین)</option>
+                                <option value="post" {{ old('font_family', $setting->font_family) === 'post' ? 'selected' : '' }}>پست (Post Font - فونت اختصاصی بی کافه)</option>
                                 <option value="shabnam" {{ old('font_family', $setting->font_family) === 'shabnam' ? 'selected' : '' }}>شبنم (Shabnam)</option>
                                 <option value="iransans" {{ old('font_family', $setting->font_family) === 'iransans' ? 'selected' : '' }}>ایران‌سنس (IRANSans)</option>
                                 <option value="b_titr" {{ old('font_family', $setting->font_family) === 'b_titr' ? 'selected' : '' }}>بی‌تیتر (B Titr - پررنگ)</option>

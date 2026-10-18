@@ -20,7 +20,7 @@ $files = new RecursiveIteratorIterator(
 $count = 0;
 foreach ($files as $file) {
     $filePath = $file->getRealPath();
-    if ($filePath === $zipFile) {
+    if ($file->getFilename() === 'beta.zip' || $filePath === realpath($zipFile)) {
         continue;
     }
 

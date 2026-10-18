@@ -34,6 +34,9 @@ Route::get('/order-status/{order_number}', [\App\Http\Controllers\Web\CheckoutCo
 Route::get('/order-status/{order_number}/feed', [\App\Http\Controllers\Web\CheckoutController::class, 'orderStatusFeed'])
     ->middleware('throttle:60,1')
     ->name('storefront.order-status.feed');
+Route::post('/order-status/{order_number}/reupload-receipt', [\App\Http\Controllers\Web\CheckoutController::class, 'reuploadReceipt'])
+    ->middleware('throttle:10,1')
+    ->name('storefront.order-status.reupload-receipt');
 Route::get('/orders/{order}/receipt', [OrderController::class, 'printReceipt'])->name('orders.receipt.public');
 
 // Dedicated Subscriptions Pages
@@ -72,7 +75,6 @@ Route::middleware('auth:customer')->prefix('panel')->name('customer.')->group(fu
     Route::get('/orders/{order}', [\App\Http\Controllers\Web\CustomerPanelController::class, 'showOrder'])->name('orders.show');
     Route::get('/subscriptions', [\App\Http\Controllers\Web\CustomerPanelController::class, 'subscriptions'])->name('subscriptions');
     Route::get('/club', [\App\Http\Controllers\Web\CustomerPanelController::class, 'club'])->name('club');
-    Route::post('/club/spin', [\App\Http\Controllers\Web\CustomerPanelController::class, 'spinWheel'])->middleware('throttle:10,1')->name('club.spin');
     Route::get('/addresses', [\App\Http\Controllers\Web\CustomerPanelController::class, 'addresses'])->name('addresses');
     Route::post('/addresses', [\App\Http\Controllers\Web\CustomerPanelController::class, 'storeAddress'])->name('addresses.store');
     Route::delete('/addresses/{address}', [\App\Http\Controllers\Web\CustomerPanelController::class, 'destroyAddress'])->name('addresses.destroy');
@@ -153,10 +155,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/loyalty/settings', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'settings'])->name('admin.loyalty.settings');
     Route::post('/admin/loyalty/settings', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'updateSettings'])->name('admin.loyalty.settings.update');
     Route::post('/loyalty/settings', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'updateSettings'])->name('loyalty.settings.update');
-    Route::get('/admin/loyalty/wheel-prizes', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'wheelPrizes'])->name('admin.loyalty.wheel-prizes');
-    Route::post('/admin/loyalty/wheel-prizes', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'storeWheelPrize'])->name('admin.loyalty.wheel-prizes.store');
-    Route::put('/admin/loyalty/wheel-prizes/{prize}', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'updateWheelPrize'])->name('admin.loyalty.wheel-prizes.update');
-    Route::delete('/admin/loyalty/wheel-prizes/{prize}', [\App\Http\Controllers\Web\LoyaltyAdminController::class, 'deleteWheelPrize'])->name('admin.loyalty.wheel-prizes.delete');
 
     // Coupons Management (WooCommerce Style)
     Route::get('/admin/coupons', [\App\Http\Controllers\Web\CouponAdminController::class, 'index'])->name('admin.coupons.index');
@@ -240,6 +238,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/settings/payment', [\App\Http\Controllers\Web\PaymentSettingController::class, 'update'])->name('settings.payment.update');
         Route::post('/settings/payment', [\App\Http\Controllers\Web\PaymentSettingController::class, 'update']);
 
+        // Fulfillment & Delivery Methods Settings
+        Route::get('/admin/settings/fulfillment', [\App\Http\Controllers\Web\FulfillmentSettingController::class, 'edit'])->name('settings.fulfillment.edit');
+        Route::get('/settings/fulfillment', [\App\Http\Controllers\Web\FulfillmentSettingController::class, 'edit']);
+        Route::post('/admin/settings/fulfillment', [\App\Http\Controllers\Web\FulfillmentSettingController::class, 'update'])->name('settings.fulfillment.update');
+        Route::post('/settings/fulfillment', [\App\Http\Controllers\Web\FulfillmentSettingController::class, 'update']);
+
         // Thermal Receipt & Invoice Designer Settings
         Route::get('/admin/settings/receipt', [\App\Http\Controllers\Web\ReceiptSettingController::class, 'edit'])->name('settings.receipt.edit');
         Route::get('/settings/receipt', [\App\Http\Controllers\Web\ReceiptSettingController::class, 'edit']);
@@ -251,6 +255,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/cafe', [\App\Http\Controllers\Web\CafeSettingController::class, 'edit']);
         Route::put('/admin/settings/cafe', [\App\Http\Controllers\Web\CafeSettingController::class, 'update'])->name('settings.cafe.update');
         Route::put('/settings/cafe', [\App\Http\Controllers\Web\CafeSettingController::class, 'update']);
+
+        // Site Content CMS & Menu Image Dimensions Settings
+        Route::get('/admin/settings/site-content', [\App\Http\Controllers\Web\SiteContentSettingController::class, 'edit'])->name('settings.site-content.edit');
+        Route::get('/settings/site-content', [\App\Http\Controllers\Web\SiteContentSettingController::class, 'edit']);
+        Route::post('/admin/settings/site-content', [\App\Http\Controllers\Web\SiteContentSettingController::class, 'update'])->name('settings.site-content.update');
+        Route::post('/settings/site-content', [\App\Http\Controllers\Web\SiteContentSettingController::class, 'update']);
 
         // Safe Git Deployments & Update Manager (cPanel UAPI / Zero-Downtime)
         Route::get('/admin/deployments', [\App\Http\Controllers\Web\DeploymentController::class, 'index'])->name('admin.deployments.index');

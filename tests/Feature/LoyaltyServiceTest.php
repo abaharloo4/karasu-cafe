@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Cafe;
 use App\Models\Coupon;
 use App\Models\Customer;
-use App\Models\LuckyWheelPrize;
 use App\Services\LoyaltyService;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,46 +44,6 @@ class LoyaltyServiceTest extends TestCase
         $totalPoints = $this->loyaltyService->getTotalPoints($this->customer->id);
 
         $this->assertEquals(80, $totalPoints);
-    }
-
-    public function test_can_spin_lucky_wheel_and_grant_reward(): void
-    {
-        LuckyWheelPrize::create([
-            'cafe_id' => $this->cafe->id,
-            'title' => '۱۰۰ امتیاز رایگان',
-            'prize_type' => 'points',
-            'prize_value' => '100',
-            'win_probability' => 100,
-            'status' => 'active',
-        ]);
-
-        $result = $this->loyaltyService->spinLuckyWheel($this->cafe->id, $this->customer->id);
-
-        $this->assertTrue($result['success']);
-        $this->assertDatabaseHas('lucky_wheel_spins', [
-            'customer_id' => $this->customer->id,
-        ]);
-
-        $this->assertEquals(100, $this->loyaltyService->getTotalPoints($this->customer->id));
-    }
-
-    public function test_cannot_spin_lucky_wheel_twice_in_same_day(): void
-    {
-        LuckyWheelPrize::create([
-            'cafe_id' => $this->cafe->id,
-            'title' => '۱۰ امتیاز',
-            'prize_type' => 'points',
-            'prize_value' => '10',
-            'win_probability' => 100,
-            'status' => 'active',
-        ]);
-
-        // First spin -> Success
-        $this->loyaltyService->spinLuckyWheel($this->cafe->id, $this->customer->id);
-
-        // Second spin on same day -> Exception
-        $this->expectException(Exception::class);
-        $this->loyaltyService->spinLuckyWheel($this->cafe->id, $this->customer->id);
     }
 
     public function test_can_redeem_coupon_with_points(): void

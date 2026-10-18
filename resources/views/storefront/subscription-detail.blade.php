@@ -10,48 +10,13 @@
     <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-full antialiased bg-[#F8FAFC] text-[#19242B] selection:bg-[#387780] selection:text-white">
+<body class="min-h-full antialiased bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 selection:bg-[#387780] selection:text-white transition-colors">
 
-    <!-- Top Sticky Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="{{ route('storefront.menu') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-10 h-10 rounded-2xl object-cover border border-[#E2E8F0] shadow-2xs">
-                    <div>
-                        <span class="text-sm font-black text-[#19242B] block leading-tight">بی کافه (B Cafe)</span>
-                        <span class="text-[10px] text-[#64748B] block">باشگاه مشترکین قهوه شیراز</span>
-                    </div>
-                </a>
-
-                <nav class="hidden md:flex items-center gap-6 text-xs font-bold text-[#475569]">
-                    <a href="{{ route('storefront.menu') }}" class="hover:text-[#387780] transition-colors">منوی آنلاین و سفارش</a>
-                    <a href="{{ route('storefront.subscriptions.index') }}" class="text-[#387780] font-black border-b-2 border-[#387780] pb-0.5">اشتراک‌های روزانه</a>
-                    <a href="{{ route('storefront.about') }}" class="hover:text-[#387780] transition-colors">درباره بی کافه</a>
-                </nav>
-            </div>
-
-            <div class="flex items-center gap-3">
-                @if(auth('customer')->check())
-                    <a href="{{ route('customer.dashboard') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#19242B] font-bold rounded-xl text-xs transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#387780]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span>پنل من ({{ auth('customer')->user()->name }})</span>
-                    </a>
-                @else
-                    <a href="{{ route('customer.login') }}" class="px-4 py-2 bg-[#387780] hover:bg-[#2E626A] text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        <span>ورود / عضویت</span>
-                    </a>
-                @endif
-
-                <a href="{{ route('cart.index') }}" class="p-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#387780] text-[#19242B] transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                </a>
-            </div>
-        </div>
-    </header>
+    <!-- Unified Global Navigation Header -->
+    <x-storefront-header :activeTab="'subscriptions'" />
 
     @php
         $pricePerCup = $plan->total_items > 0 ? (int) round($plan->price / $plan->total_items) : 0;
@@ -220,6 +185,16 @@
                                 اعتبار پلن‌ها {{ $plan->duration_days }} روز از تاریخ خرید است؛ در صورت تمدید مجدد قبل از انقضا، اعتبار شما منتقل خواهد شد.
                             </p>
                         </div>
+
+                        @php $siteContent = \App\Models\SiteContentSetting::getForCafe(); @endphp
+                        @if($siteContent->subscriptions_rules)
+                        <div class="p-3.5 rounded-xl bg-teal-50/50 border border-teal-200 text-[#19242B]">
+                            <span class="font-black text-[#387780] block mb-1">ضوابط و شرایط عمومی اشتراک‌های بی کافه:</span>
+                            <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                                {{ $siteContent->subscriptions_rules }}
+                            </p>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -330,20 +305,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-[#E2E8F0] py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#64748B]">
-            <div class="flex items-center gap-2">
-                <img src="{{ asset('images/logo.jpeg') }}" class="w-7 h-7 rounded-lg object-cover">
-                <span class="font-bold text-[#19242B]">بی کافه شیراز</span>
-                <span>— سامانه اشتراک آنلاین قهوه تخصصی</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span>© {{ date('Y') }} کلیه حقوق محفوظ است.</span>
-                <span>•</span>
-                <span>طراحی و توسعه توسط امیرمحمد بهارلو</span>
-            </div>
-        </div>
-    </footer>
+    <x-storefront-footer />
 
 </body>
 </html>

@@ -366,84 +366,177 @@
 
     <!-- Receipt Preview & Verification Modal (Phase 2) -->
     <div x-show="receiptModalOpen" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="receiptModalOpen = false">
-        <div class="bg-white rounded-3xl p-6 max-w-lg w-full space-y-4 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150" @click.away="receiptModalOpen = false">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150" @click.away="receiptModalOpen = false">
+            <!-- Modal Header (Sticky) -->
+            <div class="shrink-0 flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/80">
                 <h4 class="text-xs font-black text-slate-900 flex items-center gap-2">
                     <span class="w-2.5 h-4 rounded-full bg-amber-500"></span>
                     <span>بررسی فیش واریز کارت‌به‌کارت سفارش <span class="font-mono text-amber-700" x-text="selectedReceiptOrder ? selectedReceiptOrder.order_number : ''"></span></span>
                 </h4>
-                <button type="button" @click="receiptModalOpen = false" class="text-slate-400 hover:text-slate-700 font-bold text-lg leading-none">&times;</button>
+                <button type="button" @click="receiptModalOpen = false" class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold transition-colors">
+                    <span>بستن</span>
+                    <span class="text-sm font-black">&times;</span>
+                </button>
             </div>
 
+            <!-- Modal Body (Scrollable) -->
             <template x-if="selectedReceiptOrder">
-                <div class="space-y-4">
-                    <!-- Receipt Large Image Display -->
-                    <div class="relative bg-slate-950 rounded-2xl overflow-hidden max-h-[380px] flex items-center justify-center border border-slate-200">
-                        <img :src="selectedReceiptOrder.receipt_image" alt="فیش واریز" class="max-h-[380px] w-auto object-contain">
-                        <a :href="selectedReceiptOrder.receipt_image" target="_blank" class="absolute bottom-3 end-3 px-3 py-1.5 bg-black/60 hover:bg-black/80 text-white text-[11px] font-bold rounded-xl backdrop-blur-xs flex items-center gap-1.5 transition-colors">
+                <div class="flex-1 overflow-y-auto p-5 space-y-4">
+                    <!-- Receipt Inspection Lightbox with Zoom & Rotate Controls -->
+                    <div class="relative bg-slate-950 rounded-2xl overflow-hidden min-h-[260px] max-h-[380px] flex items-center justify-center border border-slate-700 shadow-inner">
+                        <div class="overflow-hidden w-full h-full flex items-center justify-center p-2">
+                            <img :src="selectedReceiptOrder.receipt_image" alt="فیش واریز"
+                                 class="max-h-[320px] w-auto object-contain select-none transition-transform duration-200"
+                                 :style="`transform: scale(${receiptZoom}) rotate(${receiptRotation}deg);`">
+                        </div>
+
+                        <!-- Zoom & Rotate Floating Toolbar -->
+                        <div class="absolute top-3 end-3 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-md p-1 rounded-xl border border-white/10 shadow-lg z-20">
+                            <button type="button" @click="receiptZoom = Math.min(receiptZoom + 0.3, 3)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs font-bold" title="بزرگ‌نمایی (+)">
+                                +
+                            </button>
+                            <button type="button" @click="receiptZoom = Math.max(receiptZoom - 0.3, 0.8)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs font-bold" title="کوچک‌نمایی (-)">
+                                -
+                            </button>
+                            <button type="button" @click="receiptRotation = (receiptRotation + 90) % 360" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs font-bold" title="چرخش ۹۰ درجه">
+                                ↻
+                            </button>
+                            <button type="button" @click="receiptZoom = 1; receiptRotation = 0" class="px-2 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] text-white font-bold" title="بازنشانی زاویه و اندازه">
+                                ریست
+                            </button>
+                        </div>
+
+                        <a :href="selectedReceiptOrder.receipt_image" target="_blank" class="absolute bottom-3 end-3 px-3 py-1.5 bg-black/70 hover:bg-black text-white text-[11px] font-bold rounded-xl backdrop-blur-xs flex items-center gap-1.5 transition-colors border border-white/10 z-20">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            <span>مشاهده اندازه اصلی</span>
+                            <span>اندازه اصلی</span>
                         </a>
                     </div>
 
-                    <!-- Receipt Metadata Grid -->
-                    <div class="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                    <!-- Receipt Metadata Grid with Quick-Copy Buttons -->
+                    <div class="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                         <div>
                             <span class="text-slate-400 block text-[11px]">مشتری:</span>
                             <span class="font-bold text-slate-800" x-text="selectedReceiptOrder.customer_name"></span>
                         </div>
-                        <div>
-                            <span class="text-slate-400 block text-[11px]">مبلغ سفارش:</span>
-                            <span class="font-black text-slate-900 tabular-nums" x-text="selectedReceiptOrder.final_payable_formatted + ' تومان'"></span>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-slate-400 block text-[11px]">مبلغ سفارش:</span>
+                                <span class="font-black text-slate-900 tabular-nums" x-text="selectedReceiptOrder.final_payable_formatted + ' تومان'"></span>
+                            </div>
+                            <button type="button" @click="navigator.clipboard.writeText(selectedReceiptOrder.final_payable); copiedField = 'amount'; setTimeout(() => copiedField = '', 1500)"
+                                    class="text-[10px] px-2 py-1 bg-white hover:bg-slate-200 rounded-lg border border-slate-200 text-slate-700 font-bold transition-colors">
+                                <span x-text="copiedField === 'amount' ? 'کپی شد!' : 'کپی مبلغ'"></span>
+                            </button>
                         </div>
                         <template x-if="selectedReceiptOrder.card_pan">
-                            <div>
-                                <span class="text-slate-400 block text-[11px]">شماره کارت واریزکننده:</span>
-                                <span class="font-mono font-bold text-slate-800" dir="ltr" x-text="selectedReceiptOrder.card_pan"></span>
+                            <div class="flex items-center justify-between col-span-2 sm:col-span-1 pt-1 border-t sm:border-t-0 border-slate-200">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">شماره کارت واریزکننده:</span>
+                                    <span class="font-mono font-bold text-slate-800" dir="ltr" x-text="selectedReceiptOrder.card_pan"></span>
+                                </div>
+                                <button type="button" @click="navigator.clipboard.writeText(selectedReceiptOrder.card_pan); copiedField = 'card'; setTimeout(() => copiedField = '', 1500)"
+                                        class="text-[10px] px-2 py-1 bg-white hover:bg-slate-200 rounded-lg border border-slate-200 text-slate-700 font-bold transition-colors">
+                                    <span x-text="copiedField === 'card' ? 'کپی شد!' : 'کپی کارت'"></span>
+                                </button>
                             </div>
                         </template>
                         <template x-if="selectedReceiptOrder.tracking_number">
-                            <div>
-                                <span class="text-slate-400 block text-[11px]">شماره پیگیری / مرجع:</span>
-                                <span class="font-mono font-bold text-slate-800" dir="ltr" x-text="selectedReceiptOrder.tracking_number"></span>
+                            <div class="flex items-center justify-between col-span-2 sm:col-span-1 pt-1 border-t sm:border-t-0 border-slate-200">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">شماره پیگیری / مرجع:</span>
+                                    <span class="font-mono font-bold text-slate-800" dir="ltr" x-text="selectedReceiptOrder.tracking_number"></span>
+                                </div>
+                                <button type="button" @click="navigator.clipboard.writeText(selectedReceiptOrder.tracking_number); copiedField = 'tracking'; setTimeout(() => copiedField = '', 1500)"
+                                        class="text-[10px] px-2 py-1 bg-white hover:bg-slate-200 rounded-lg border border-slate-200 text-slate-700 font-bold transition-colors">
+                                    <span x-text="copiedField === 'tracking' ? 'کپی شد!' : 'کپی کد'"></span>
+                                </button>
                             </div>
                         </template>
                     </div>
 
-                    <!-- Reject Reason Input (Conditional) -->
-                    <div x-show="receiptActionMode === 'reject'" class="space-y-2 pt-2 border-t border-slate-100">
-                        <label class="block text-xs font-black text-rose-700">علت رد فیش واریزی:</label>
-                        <input type="text" x-model="rejectReason" placeholder="مثال: مبلغ واریزی ناقص است یا تصویر فیش خوانا نیست."
-                               class="w-full text-xs rounded-xl border border-rose-300 px-3 py-2 bg-rose-50/40 focus:border-rose-500 focus:ring-1 focus:ring-rose-500">
-                    </div>
-
-                    <!-- Modal Actions -->
-                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                        <button type="button" @click="receiptModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
-                            بستن
-                        </button>
-
-                        <template x-if="receiptActionMode === 'reject'">
-                            <button type="button" @click="verifyPayment(selectedReceiptOrder.payment_id, 'reject', rejectReason)"
-                                    class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black transition-colors shadow-xs">
-                                تایید رد فیش و لغو سفارش
+                    <!-- Reject Options & Reason Drawer (Enhanced) -->
+                    <div x-show="receiptActionMode === 'reject'" class="space-y-3 pt-3 border-t border-slate-200 bg-rose-50/50 p-4 rounded-2xl border border-rose-200">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-black text-rose-800 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span>نحوه برخورد با سفارش:</span>
+                            </label>
+                            <button type="button" @click="receiptActionMode = 'view'" class="text-[11px] text-slate-500 hover:text-slate-800 font-bold">
+                                بازگشت به مشاهده
                             </button>
-                        </template>
+                        </div>
 
-                        <template x-if="receiptActionMode !== 'reject'">
-                            <div class="flex items-center gap-2">
-                                <button type="button" @click="receiptActionMode = 'reject'"
-                                        class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors">
-                                    رد فیش...
-                                </button>
-                                <button type="button" @click="verifyPayment(selectedReceiptOrder.payment_id, 'approve')"
-                                        class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors shadow-xs flex items-center gap-1.5">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    <span>تایید فیش و شروع آماده‌سازی</span>
-                                </button>
-                            </div>
-                        </template>
+                        <!-- Action Choice: Re-upload vs Cancel -->
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label :class="rejectAction === 'request_reupload' ? 'bg-amber-100 border-amber-400 text-amber-950 font-black' : 'bg-white border-slate-200 text-slate-700 font-medium'"
+                                   class="p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-colors shadow-2xs">
+                                <input type="radio" value="request_reupload" x-model="rejectAction" class="text-amber-600">
+                                <div>
+                                    <span class="block">درخواست ارسال مجدد فیش</span>
+                                    <span class="text-[10px] text-slate-500 font-normal">سفارش فعال می‌ماند + پیامک به مشتری</span>
+                                </div>
+                            </label>
+
+                            <label :class="rejectAction === 'cancel_order' ? 'bg-rose-100 border-rose-400 text-rose-950 font-black' : 'bg-white border-slate-200 text-slate-700 font-medium'"
+                                   class="p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-colors shadow-2xs">
+                                <input type="radio" value="cancel_order" x-model="rejectAction" class="text-rose-600">
+                                <div>
+                                    <span class="block">لغو قطعی سفارش</span>
+                                    <span class="text-[10px] text-slate-500 font-normal">بستن سفارش و لغو فاکتور</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Preset Rejection Reasons -->
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">انتخاب علت از پیش‌تعریف‌شده:</label>
+                            <select x-model="presetReason" @change="if(presetReason !== 'other') rejectReason = presetReason"
+                                    class="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/20">
+                                <option value="مبلغ واریزی کمتر از فاکتور است">مبلغ واریزی کمتر از فاکتور است</option>
+                                <option value="تصویر فیش تار، ناخوانا یا ناقص است">تصویر فیش تار، ناخوانا یا ناقص است</option>
+                                <option value="وجه به حساب کافه ننشسته است">وجه به حساب کافه ننشسته است</option>
+                                <option value="فیش تکراری، نامعتبر یا فاقد کد ارجاع است">فیش تکراری، نامعتبر یا فاقد کد ارجاع است</option>
+                                <option value="other">سایر (توضیح دلخواه)...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">متن نهایی جهت ارسال به مشتری:</label>
+                            <textarea x-model="rejectReason" rows="2" placeholder="متن پیام توضیحی به مشتری..."
+                                      class="w-full text-xs rounded-xl border border-rose-300 px-3 py-2 bg-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500"></textarea>
+                        </div>
                     </div>
+                </div>
+            </template>
+
+            <!-- Modal Footer (Sticky) -->
+            <template x-if="selectedReceiptOrder">
+                <div class="shrink-0 px-5 py-3.5 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between gap-2">
+                    <button type="button" @click="receiptModalOpen = false" class="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors">
+                        بستن پنجره
+                    </button>
+
+                    <template x-if="receiptActionMode === 'reject'">
+                        <button type="button" @click="verifyPayment(selectedReceiptOrder.payment_id, 'reject', rejectReason || presetReason, rejectAction)"
+                                :class="rejectAction === 'request_reupload' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-rose-600 hover:bg-rose-700'"
+                                class="px-5 py-2 text-white rounded-xl text-xs font-black transition-colors shadow-xs">
+                            <span x-text="rejectAction === 'request_reupload' ? 'ارسال درخواست فیش جدید به مشتری' : 'تایید رد فیش و لغو نهایی سفارش'"></span>
+                        </button>
+                    </template>
+
+                    <template x-if="receiptActionMode !== 'reject'">
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="receiptActionMode = 'reject'; rejectReason = presetReason"
+                                    class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-colors">
+                                رد فیش یا درخواست اصلاح...
+                            </button>
+                            <button type="button" @click="verifyPayment(selectedReceiptOrder.payment_id, 'approve')"
+                                    class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-colors shadow-xs flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>تایید فیش و شروع آماده‌سازی</span>
+                            </button>
+                        </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -466,11 +559,21 @@ function liveKitchenBoard(initialOrders = []) {
         selectedReceiptOrder: null,
         receiptActionMode: 'view',
         rejectReason: '',
+        presetReason: 'مبلغ واریزی کمتر از فاکتور است',
+        rejectAction: 'request_reupload',
+        receiptZoom: 1,
+        receiptRotation: 0,
+        copiedField: '',
 
         openReceiptModal(order, mode = 'view') {
             this.selectedReceiptOrder = order;
             this.receiptActionMode = mode;
-            this.rejectReason = '';
+            this.presetReason = 'مبلغ واریزی کمتر از فاکتور است';
+            this.rejectReason = 'مبلغ واریزی کمتر از فاکتور است';
+            this.rejectAction = 'request_reupload';
+            this.receiptZoom = 1;
+            this.receiptRotation = 0;
+            this.copiedField = '';
             this.receiptModalOpen = true;
         },
 
@@ -592,7 +695,7 @@ function liveKitchenBoard(initialOrders = []) {
             .catch(err => console.error('Status change error:', err));
         },
 
-        verifyPayment(paymentId, action = 'approve', reason = '') {
+        verifyPayment(paymentId, action = 'approve', reason = '', rejectAction = 'cancel_order') {
             if (!paymentId) return;
             fetch(`/admin/live-orders/payment/${paymentId}/verify`, {
                 method: 'POST',
@@ -601,7 +704,11 @@ function liveKitchenBoard(initialOrders = []) {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ action: action, reason: reason })
+                body: JSON.stringify({
+                    action: action,
+                    reason: reason,
+                    reject_action: rejectAction
+                })
             })
             .then(res => res.json())
             .then(res => {

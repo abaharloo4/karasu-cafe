@@ -44,8 +44,13 @@ class CleanupCardReceipts extends Command
         foreach ($payments as $payment) {
             $imagePath = $payment->receipt_image;
 
-            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
+            if ($imagePath) {
+                if (Storage::disk('local')->exists($imagePath)) {
+                    Storage::disk('local')->delete($imagePath);
+                }
+                if (Storage::disk('public')->exists($imagePath)) {
+                    Storage::disk('public')->delete($imagePath);
+                }
             }
 
             $payment->update([

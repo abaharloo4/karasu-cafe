@@ -10,48 +10,16 @@
     <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=2.0.2">
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}?v=2.0.2">
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-full antialiased bg-[#F8FAFC] text-[#19242B] selection:bg-[#387780] selection:text-white" x-data="subscriptionPage()">
+<body class="min-h-full antialiased bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 selection:bg-[#387780] selection:text-white transition-colors" x-data="subscriptionPage()">
+    @php
+        $siteContent = \App\Models\SiteContentSetting::getForCafe();
+    @endphp
 
-    <!-- Top Sticky Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E2E8F0] shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <a href="{{ route('storefront.menu') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-10 h-10 rounded-2xl object-cover border border-[#E2E8F0] shadow-2xs">
-                    <div>
-                        <span class="text-sm font-black text-[#19242B] block leading-tight">بی کافه (B Cafe)</span>
-                        <span class="text-[10px] text-[#64748B] block">باشگاه مشترکین قهوه شیراز</span>
-                    </div>
-                </a>
-
-                <nav class="hidden md:flex items-center gap-6 text-xs font-bold text-[#475569]">
-                    <a href="{{ route('storefront.menu') }}" class="hover:text-[#387780] transition-colors">منوی آنلاین و سفارش</a>
-                    <a href="{{ route('storefront.subscriptions.index') }}" class="text-[#387780] font-black border-b-2 border-[#387780] pb-0.5">اشتراک‌های روزانه</a>
-                    <a href="{{ route('storefront.about') }}" class="hover:text-[#387780] transition-colors">درباره بی کافه</a>
-                </nav>
-            </div>
-
-            <div class="flex items-center gap-3">
-                @if(auth('customer')->check())
-                    <a href="{{ route('customer.dashboard') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#19242B] font-bold rounded-xl text-xs transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#387780]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span>پنل من ({{ auth('customer')->user()->name }})</span>
-                    </a>
-                @else
-                    <a href="{{ route('customer.login') }}" class="px-4 py-2 bg-[#387780] hover:bg-[#2E626A] text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        <span>ورود / عضویت</span>
-                    </a>
-                @endif
-
-                <a href="{{ route('cart.index') }}" class="p-2.5 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#387780] text-[#19242B] transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                </a>
-            </div>
-        </div>
-    </header>
+    <!-- Unified Global Navigation Header -->
+    <x-storefront-header :activeTab="'subscriptions'" :siteContent="$siteContent" />
 
     <!-- Hero Section with Persuasive Copy -->
     <section class="relative overflow-hidden bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9] border-b border-[#E2E8F0] py-16 sm:py-24">
@@ -62,12 +30,11 @@
             </div>
 
             <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-[#19242B] tracking-tight leading-tight max-w-4xl mx-auto">
-                هر روز قهوه تخصصی تازه بنوش، <br class="hidden sm:inline">
-                <span class="text-[#387780]">تا ۵۰٪ کمتر هزینه کن</span>
+                {{ $siteContent->subscriptions_title ?? 'هر روز قهوه تخصصی تازه بنوش، تا ۵۰٪ کمتر هزینه کن' }}
             </h1>
 
             <p class="text-sm sm:text-base text-[#64748B] max-w-2xl mx-auto leading-relaxed">
-                با اشتراک بی کافه، دیگه نیازی نیست هر روز کارت بکشی یا معطل بمونی. قهوه‌ت چه توی کافه چه با پیک در شیراز، همیشه با خیال راحت آماده‌ست.
+                {{ $siteContent->subscriptions_subtitle ?? 'با اشتراک بی کافه، دیگه نیازی نیست هر روز کارت بکشی یا معطل بمونی. قهوه‌ت چه توی کافه چه با پیک در شیراز، همیشه با خیال راحت آماده‌ست.' }}
             </p>
 
             <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -334,19 +301,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-[#19242B] text-white py-12 border-t border-white/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-6 text-xs text-slate-300">
-            <div>
-                <span class="font-black text-white text-sm block">بی کافه شیراز (B Cafe)</span>
-                <span class="text-[11px] text-slate-400">شیراز، میدان ارم، ابتدای بلوار دانشجو • تلفن: ۰۷۱-۳۶۲۸۰۰۰۰</span>
-            </div>
-            <div class="flex items-center gap-6">
-                <a href="{{ route('storefront.menu') }}" class="hover:underline">منوی کافه</a>
-                <a href="{{ route('storefront.subscriptions.index') }}" class="hover:underline">اشتراک‌ها</a>
-                <a href="{{ route('storefront.about') }}" class="hover:underline">درباره ما</a>
-            </div>
-        </div>
-    </footer>
+    <x-storefront-footer :siteContent="$siteContent" />
 
     <!-- Alpine.js Script for Calculator -->
     <script>

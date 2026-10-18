@@ -12,35 +12,39 @@
 
     @include('partials.pwa-meta', ['pwaPanel' => 'customer'])
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="h-full antialiased selection:bg-[#3C6E71] selection:text-white bg-[#F7F9FA] text-[#353535]" x-data="{ sidebarOpen: false }">
+<body class="h-full antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 transition-colors" x-data="{ sidebarOpen: false }">
 
     @include('partials.page-preloader')
 
     <!-- Mobile Top Header Bar -->
-    <header class="md:hidden bg-white border-b border-[#D9D9D9] sticky top-0 z-30 px-4 h-16 flex items-center justify-between shadow-2xs">
+    <header class="md:hidden bg-white dark:bg-[#141D22] border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 h-16 flex items-center justify-between shadow-2xs">
         <div class="flex items-center gap-3">
             <button type="button"
                     @click="sidebarOpen = true"
-                    class="p-2 text-[#353535] hover:bg-[#F7F9FA] rounded-xl transition-colors btn-tactile min-w-[44px] min-h-[44px] flex items-center justify-center border border-[#D9D9D9]/80"
+                    class="p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors btn-tactile min-w-[44px] min-h-[44px] flex items-center justify-center border border-slate-200 dark:border-slate-700"
                     aria-label="باز کردن منو">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
             <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2">
-                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-8 h-8 rounded-xl object-cover border border-[#D9D9D9]">
+                <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-8 h-8 rounded-xl object-cover border border-slate-200 dark:border-slate-700">
                 <div>
-                    <span class="font-black text-xs text-[#353535] block leading-tight">بی کافه (B Cafe)</span>
-                    <span class="text-[10px] text-[#3C6E71] font-bold">حساب کاربری</span>
+                    <span class="font-black text-xs text-[#19242B] dark:text-white block leading-tight">بی کافه (B Cafe)</span>
+                    <span class="text-[10px] text-[#387780] dark:text-teal-400 font-bold">حساب کاربری</span>
                 </div>
             </a>
         </div>
 
         <div class="flex items-center gap-2">
+            <!-- Dark Mode Toggle Button -->
+            <x-theme-toggle size="sm" />
+
             @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
-                <a href="{{ route('dashboard') }}" class="px-2.5 py-1.5 bg-[#3C6E71] hover:bg-[#284B63] text-white rounded-xl text-[11px] font-black btn-tactile flex items-center gap-1 shadow-2xs transition-colors">
+                <a href="{{ route('dashboard') }}" class="px-2.5 py-1.5 bg-[#387780] hover:bg-[#284B63] text-white rounded-xl text-[11px] font-black btn-tactile flex items-center gap-1 shadow-2xs transition-colors">
                     <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span>پنل مدیریت</span>
                 </a>
@@ -208,14 +212,17 @@
         <aside class="hidden md:flex flex-col w-64 lg:w-72 bg-white border-s border-[#D9D9D9] sticky top-0 h-screen overflow-y-auto shrink-0 select-none justify-between p-5 shadow-xs z-20">
             <div class="space-y-6">
                 <!-- Brand Header -->
-                <div class="flex items-center gap-3 pb-5 border-b border-[#D9D9D9]/80">
+                <div class="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-slate-800">
                     <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-12 h-12 rounded-2xl object-cover border border-[#D9D9D9] shadow-xs flex-shrink-0">
+                        <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-12 h-12 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs flex-shrink-0">
                         <div>
-                            <span class="font-black text-base text-[#353535] block leading-tight">بی کافه (B Cafe)</span>
-                            <span class="text-[11px] text-[#3C6E71] font-bold">باشگاه مشتریان و منو</span>
+                            <span class="font-black text-base text-[#19242B] dark:text-white block leading-tight">بی کافه (B Cafe)</span>
+                            <span class="text-[11px] text-[#387780] dark:text-teal-400 font-bold">باشگاه مشتریان و منو</span>
                         </div>
                     </a>
+
+                    <!-- Dark Mode Toggle Button for Desktop -->
+                    <x-theme-toggle size="sm" />
                 </div>
 
                 <!-- Customer Mini Profile Card -->

@@ -149,11 +149,12 @@ class ReceiptSetting extends Model
     public function getFontFamilyCssAttribute(): string
     {
         return match ($this->font_family) {
-            'shabnam' => "'Shabnam', Tahoma, sans-serif",
-            'iransans' => "'IRANSans', Tahoma, sans-serif",
+            'post' => "'PostFont', 'Vazirmatn', sans-serif",
+            'shabnam' => "'Shabnam', 'Vazirmatn', Tahoma, sans-serif",
+            'iransans' => "'IRANSans', 'Vazirmatn', Tahoma, sans-serif",
             'b_titr' => "'B Titr', 'Vazirmatn', sans-serif",
             'courier' => "'Courier New', Courier, monospace",
-            default => "'Vazirmatn', 'Tahoma', Arial, sans-serif",
+            default => "'Vazirmatn', Tahoma, Arial, sans-serif",
         };
     }
 

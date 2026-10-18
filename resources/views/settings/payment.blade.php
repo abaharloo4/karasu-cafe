@@ -34,11 +34,33 @@
                     </div>
                 </div>
 
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <span class="text-xs font-bold text-[#19242B]">وضعیت:</span>
-                    <input type="checkbox" name="zarinpal_is_active" value="1" {{ old('zarinpal_is_active', $zarinpal->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded text-[#387780] focus:ring-[#387780]">
-                    <span class="text-xs font-semibold text-[#475569]">فعال</span>
-                </label>
+                @php
+                    $zarinpalStatus = old('zarinpal_status', $zarinpal->status ?? ($zarinpal->is_active ? 'active' : 'inactive'));
+                @endphp
+                <!-- Status 3-way Selector -->
+                <div class="flex items-center gap-2 bg-[#F8FAFC] p-1.5 rounded-2xl border border-[#CBD5E1]" x-data="{ status: '{{ $zarinpalStatus }}' }">
+                    <label :class="status === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="zarinpal_status" value="active" x-model="status" class="sr-only">
+                        <span>فعال</span>
+                    </label>
+                    <label :class="status === 'coming_soon' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="zarinpal_status" value="coming_soon" x-model="status" class="sr-only">
+                        <span>به‌زودی</span>
+                    </label>
+                    <label :class="status === 'inactive' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="zarinpal_status" value="inactive" x-model="status" class="sr-only">
+                        <span>غیرفعال</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Coming Soon Notice Note -->
+            <div>
+                <label class="block text-xs font-bold text-[#19242B] mb-1.5">پیام حالت «به‌زودی» (اختیاری جهت نمایش در صفحه تسویه)</label>
+                <input type="text" name="zarinpal_coming_soon_note" value="{{ old('zarinpal_coming_soon_note', $zarinpal->coming_soon_note ?? '') }}" placeholder="مثلاً: درگاه در حال دریافت مجوز شاپرک است و به زودی فعال خواهد شد." class="w-full px-4 py-2.5 rounded-xl bg-white border border-[#CBD5E1] text-[#19242B] text-xs focus:outline-none focus:border-[#387780] focus:ring-1 focus:ring-[#387780]">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -70,7 +92,7 @@
 
         <!-- 2. Card to Card Settings Card -->
         <div class="bg-white border border-[#E2E8F0] p-6 rounded-3xl space-y-4 shadow-xs">
-            <div class="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+            <div class="flex flex-wrap items-center justify-between border-b border-[#E2E8F0] pb-4 gap-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#387780]">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
@@ -81,11 +103,33 @@
                     </div>
                 </div>
 
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <span class="text-xs font-bold text-[#19242B]">وضعیت:</span>
-                    <input type="checkbox" name="card_to_card_is_active" value="1" {{ old('card_to_card_is_active', $cardToCard->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded text-[#387780] focus:ring-[#387780]">
-                    <span class="text-xs font-semibold text-[#475569]">فعال</span>
-                </label>
+                @php
+                    $cardStatus = old('card_to_card_status', $cardToCard->status ?? ($cardToCard->is_active ? 'active' : 'inactive'));
+                @endphp
+                <!-- Status 3-way Selector -->
+                <div class="flex items-center gap-2 bg-[#F8FAFC] p-1.5 rounded-2xl border border-[#CBD5E1]" x-data="{ status: '{{ $cardStatus }}' }">
+                    <label :class="status === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="card_to_card_status" value="active" x-model="status" class="sr-only">
+                        <span>فعال</span>
+                    </label>
+                    <label :class="status === 'coming_soon' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="card_to_card_status" value="coming_soon" x-model="status" class="sr-only">
+                        <span>به‌زودی</span>
+                    </label>
+                    <label :class="status === 'inactive' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="card_to_card_status" value="inactive" x-model="status" class="sr-only">
+                        <span>غیرفعال</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Coming Soon Notice Note -->
+            <div>
+                <label class="block text-xs font-bold text-[#19242B] mb-1.5">پیام حالت «به‌زودی» (اختیاری)</label>
+                <input type="text" name="card_to_card_coming_soon_note" value="{{ old('card_to_card_coming_soon_note', $cardToCard->coming_soon_note ?? '') }}" placeholder="مثلاً: در حال به‌روزرسانی حساب بانکی کافه..." class="w-full px-4 py-2.5 rounded-xl bg-white border border-[#CBD5E1] text-[#19242B] text-xs focus:outline-none focus:border-[#387780] focus:ring-1 focus:ring-[#387780]">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,7 +162,7 @@
 
         <!-- 3. Cash on Delivery / In-Store POS Settings Card -->
         <div class="bg-white border border-[#E2E8F0] p-6 rounded-3xl space-y-4 shadow-xs">
-            <div class="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+            <div class="flex flex-wrap items-center justify-between border-b border-[#E2E8F0] pb-4 gap-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[#19242B]">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -129,11 +173,33 @@
                     </div>
                 </div>
 
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <span class="text-xs font-bold text-[#19242B]">وضعیت:</span>
-                    <input type="checkbox" name="cash_is_active" value="1" {{ old('cash_is_active', $cash->is_active ?? true) ? 'checked' : '' }} class="w-5 h-5 rounded text-[#387780] focus:ring-[#387780]">
-                    <span class="text-xs font-semibold text-[#475569]">فعال</span>
-                </label>
+                @php
+                    $cashStatus = old('cash_status', $cash->status ?? ($cash->is_active ? 'active' : 'inactive'));
+                @endphp
+                <!-- Status 3-way Selector -->
+                <div class="flex items-center gap-2 bg-[#F8FAFC] p-1.5 rounded-2xl border border-[#CBD5E1]" x-data="{ status: '{{ $cashStatus }}' }">
+                    <label :class="status === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="cash_status" value="active" x-model="status" class="sr-only">
+                        <span>فعال</span>
+                    </label>
+                    <label :class="status === 'coming_soon' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="cash_status" value="coming_soon" x-model="status" class="sr-only">
+                        <span>به‌زودی</span>
+                    </label>
+                    <label :class="status === 'inactive' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+                           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition-all">
+                        <input type="radio" name="cash_status" value="inactive" x-model="status" class="sr-only">
+                        <span>غیرفعال</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Coming Soon Notice Note -->
+            <div>
+                <label class="block text-xs font-bold text-[#19242B] mb-1.5">پیام حالت «به‌زودی» (اختیاری)</label>
+                <input type="text" name="cash_coming_soon_note" value="{{ old('cash_coming_soon_note', $cash->coming_soon_note ?? '') }}" placeholder="مثلاً: دستگاه کارتخوان سیار به زودی به ناوگان تحویل اضافه می‌شود." class="w-full px-4 py-2.5 rounded-xl bg-white border border-[#CBD5E1] text-[#19242B] text-xs focus:outline-none focus:border-[#387780] focus:ring-1 focus:ring-[#387780]">
             </div>
 
             <div>

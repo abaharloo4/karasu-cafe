@@ -13,6 +13,7 @@
 
     @include('partials.pwa-meta', ['pwaPanel' => 'admin'])
 
+    @include('partials.theme-init')
     <!-- Bundled Offline Assets (Vazirmatn + Tailwind CSS v4 + Alpine.js) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
@@ -21,7 +22,7 @@
       @keydown.window.prevent.ctrl.k="searchOpen = !searchOpen"
       @keydown.window.prevent.cmd.k="searchOpen = !searchOpen"
       @keydown.escape="searchOpen = false"
-      class="h-full flex flex-col md:flex-row antialiased selection:bg-[#3C6E71] selection:text-white text-[#353535] relative overflow-x-hidden">
+      class="h-full flex flex-col md:flex-row antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 relative overflow-x-hidden transition-colors">
 
     @include('partials.page-preloader')
 
@@ -158,9 +159,14 @@
                     <span class="px-1.5 py-0.5 text-[9px] rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">XLS</span>
                 </a>
 
+                <a href="{{ route('settings.fulfillment.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.fulfillment.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                    <span>روش‌های ارسال و تحویل</span>
+                </a>
+
                 <a href="{{ route('settings.payment.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.payment.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                    <span>روش‌های پرداخت (فعال/غیرفعال)</span>
+                    <span>روش‌های پرداخت (فعال/به‌زودی)</span>
                 </a>
 
                 <a href="{{ route('settings.sms.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.sms.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
@@ -171,6 +177,11 @@
                 <a href="{{ route('settings.receipt.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.receipt.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     <span>طراحی و تنظیمات فاکتور (۸۰mm)</span>
+                </a>
+
+                <a href="{{ route('settings.site-content.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.site-content.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>محتوا، عکس‌ها و صفحات</span>
                 </a>
 
                 <a href="{{ route('settings.cafe.edit') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs btn-tactile min-h-[42px] {{ request()->routeIs('settings.cafe.*') ? 'bg-[#387780] text-white font-bold shadow-sm' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
@@ -247,6 +258,9 @@
 
             <!-- Header Quick Action Buttons & Profile -->
             <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                <!-- Dark / Light Mode Switcher Toggle Button -->
+                <x-theme-toggle />
+
                 <!-- Notification Bell with Badge (3) -->
                 <a href="{{ route('admin.live-orders.index') }}" title="سفارشات زنده" class="relative w-10 h-10 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center btn-tactile shadow-2xs">
                     <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>

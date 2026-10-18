@@ -13,12 +13,15 @@
     'currency' => 'تومان',
     'categoryName' => null,
     'isFavorite' => null,
+    'aspectRatio' => null,
 ])
 
 @php
     if (!$product) {
         return;
     }
+
+    $aspectRatio = $aspectRatio ?? \App\Models\SiteContentSetting::getForCafe()->aspect_ratio_class;
 
     $isArr = is_array($product);
 
@@ -249,12 +252,12 @@
     @else
         {{-- STANDARD COMPACT 2-COL MOBILE FRIENDLY CARD --}}
         <div class="flex-1 flex flex-col justify-between space-y-2">
-            <!-- Top Image Area with Standard 4:3 Aspect Ratio -->
-            <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shrink-0 bg-slate-50">
+            <!-- Top Image Area with Dynamic Aspect Ratio -->
+            <div class="relative w-full {{ $aspectRatio }} rounded-xl overflow-hidden shrink-0 bg-slate-50">
                 <x-product-card.image :image="$mainImage"
                                       :name="$name"
                                       :product="$product"
-                                      aspect-ratio="aspect-[4/3]"
+                                      :aspect-ratio="$aspectRatio"
                                       class="w-full h-full object-cover" />
 
                 <!-- Discount Badge Top-Start -->

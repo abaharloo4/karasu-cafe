@@ -98,16 +98,22 @@ class CardToCardService
     /**
      * Reject card-to-card receipt.
      */
-    public function rejectReceipt(Payment $payment, string $reason): bool
+    public function rejectReceipt(Payment $payment, string $reason, string $action = 'cancel_order'): bool
     {
         $payment->update([
             'status' => 'failed',
             'admin_notes' => $reason,
         ]);
 
-        $payment->order->update([
-            'status' => 'cancelled',
-        ]);
+        if ($action === 'request_reupload') {
+            $payment->order->update([
+                'status' => 'awaiting_payment_verification',
+            ]);
+        } else {
+            $payment->order->update([
+                'status' => 'cancelled',
+            ]);
+        }
 
         return true;
     }

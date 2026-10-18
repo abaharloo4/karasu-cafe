@@ -5,42 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @php
         $setting = $setting ?? \App\Models\ReceiptSetting::getForCafe($order->cafe_id ?? 1);
-        $paperWidth = $setting->paper_width === '58mm' ? '58mm' : '80mm';
-        $containerWidth = $setting->paper_width === '58mm' ? '54mm' : '76mm';
+        $paperWidth = in_array($setting->paper_width, ['58mm', 'a4']) ? $setting->paper_width : '80mm';
         $fontCss = $setting->font_family_css;
         $fontSize = $setting->base_font_size_px;
     @endphp
     <title>{{ $setting->invoice_title }} #{{ $order->order_number }} - {{ $setting->header_title }}</title>
-    
-    @vite(['resources/css/app.css'])
 
     <style>
-        @page {
-            size: {{ $paperWidth }} auto;
-            margin: 0;
+        /* Local Offline Fonts (Zero External Dependencies) */
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('{{ asset('fonts/vazirmatn/vazirmatn-arabic-400-normal.woff2') }}') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('{{ asset('fonts/vazirmatn/vazirmatn-arabic-700-normal.woff2') }}') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('{{ asset('fonts/vazirmatn/vazirmatn-arabic-900-normal.woff2') }}') format('woff2');
+            font-weight: 900;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'PostFont';
+            src: url('{{ asset('fonts/Post-Regular.ttf') }}') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'PostFont';
+            src: url('{{ asset('fonts/Post-Bold.otf') }}') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
         }
 
-        * {
+        *, html, body, table, tr, th, td, div, span, p, b, strong, button, input {
+            font-family: {!! $fontCss !!} !important;
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
 
         body {
-            font-family: {!! $fontCss !!};
-            font-size: {{ $fontSize }}px;
+            font-size: {{ $fontSize }}px !important;
             line-height: 1.45;
-            color: #000;
-            background-color: #fff;
-            padding: 3mm 2mm;
-            width: {{ $containerWidth }};
-            margin: 0 auto;
+            color: #000 !important;
+            background-color: #fff !important;
+            margin: 0;
+            padding: 0;
         }
 
         .receipt-container {
             width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            padding: 4mm 3mm;
         }
 
         .text-center { text-align: center; }
@@ -186,57 +215,127 @@
         @media screen {
             body {
                 background-color: #f1f5f9;
-                padding: 20px;
-                width: auto;
+                padding: 24px 16px;
+                min-height: 100vh;
             }
             .receipt-container {
-                background: #fff;
-                width: {{ $paperWidth }};
-                margin: 0 auto;
-                padding: 6mm 4mm;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                border-radius: 6px;
+                box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+                transition: max-width 0.2s ease;
+            }
+            body.format-80mm .receipt-container {
+                max-width: 80mm;
+            }
+            body.format-58mm .receipt-container {
+                max-width: 58mm;
+            }
+            body.format-a4 .receipt-container {
+                max-width: 210mm;
+                padding: 12mm 15mm;
+            }
+            body.format-a4 .cafe-title {
+                font-size: {{ $fontSize + 8 }}px;
             }
             .print-actions {
-                width: {{ $paperWidth }};
-                margin: 0 auto 15px auto;
+                max-width: 80mm;
+                margin: 0 auto 16px auto;
                 display: flex;
-                gap: 8px;
+                flex-direction: column;
+                gap: 10px;
+                transition: max-width 0.2s ease;
             }
-            .btn {
-                flex: 1;
-                padding: 10px;
-                border: none;
-                border-radius: 8px;
-                font-family: inherit;
-                font-size: 12px;
-                font-weight: bold;
-                cursor: pointer;
-                text-align: center;
+            body.format-a4 .print-actions {
+                max-width: 210mm;
             }
-            .btn-primary {
-                background-color: #387780;
-                color: #fff;
-            }
-            .btn-secondary {
-                background-color: #e2e8f0;
-                color: #334155;
+            body.format-58mm .print-actions {
+                max-width: 58mm;
             }
         }
 
+        /* Standard Browser Print & Thermal Print Engine */
         @media print {
+            @page {
+                size: auto;
+                margin: 0mm;
+            }
+            body.format-80mm {
+                width: 80mm !important;
+            }
+            body.format-58mm {
+                width: 58mm !important;
+            }
+            body.format-a4 {
+                width: 100% !important;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+            }
             .print-actions {
                 display: none !important;
+            }
+            .receipt-container {
+                margin: 0 auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: #fff !important;
+            }
+            body.format-80mm .receipt-container {
+                width: 76mm !important;
+                max-width: 76mm !important;
+                padding: 2mm 1.5mm !important;
+            }
+            body.format-58mm .receipt-container {
+                width: 54mm !important;
+                max-width: 54mm !important;
+                padding: 1.5mm 1mm !important;
+            }
+            body.format-a4 .receipt-container {
+                width: 100% !important;
+                max-width: 195mm !important;
+                padding: 8mm 12mm !important;
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 6px !important;
+                font-size: {{ $fontSize + 2 }}px !important;
+            }
+            body.format-a4 .cafe-title {
+                font-size: {{ $fontSize + 8 }}px !important;
             }
         }
     </style>
 </head>
-<body>
+<body class="format-{{ $paperWidth }}">
 
-    <!-- On-screen Action Toolbar -->
+    <!-- On-screen Action Toolbar with Format Switcher & Browser Print Hints -->
     <div class="print-actions">
-        <button onclick="window.print()" class="btn btn-primary"><svg class="w-4 h-4 inline-block align-middle ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> چاپ فیش حرارتی ({{ $paperWidth }})</button>
-        <button onclick="window.close()" class="btn btn-secondary">بستن</button>
+        <div style="display: flex; gap: 6px; background: #fff; padding: 6px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <button type="button" onclick="setPaperFormat('80mm')" id="btn-80mm" style="flex: 1; padding: 6px 4px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; transition: all 0.15s; {{ $paperWidth === '80mm' ? 'background: #284B63; color: #fff;' : 'background: #f1f5f9; color: #475569;' }}">
+                رول ۸۰mm
+            </button>
+            <button type="button" onclick="setPaperFormat('58mm')" id="btn-58mm" style="flex: 1; padding: 6px 4px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; transition: all 0.15s; {{ $paperWidth === '58mm' ? 'background: #284B63; color: #fff;' : 'background: #f1f5f9; color: #475569;' }}">
+                رول ۵۸mm
+            </button>
+            <button type="button" onclick="setPaperFormat('a4')" id="btn-a4" style="flex: 1; padding: 6px 4px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; transition: all 0.15s; {{ $paperWidth === 'a4' ? 'background: #284B63; color: #fff;' : 'background: #f1f5f9; color: #475569;' }}">
+                کاغذ A4/A5
+            </button>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="triggerPrint()" style="flex: 2; padding: 11px; border-radius: 12px; font-size: 12px; font-weight: 900; background: #3C6E71; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(60,110,113,0.25);">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>چاپ فیش (Print)</span>
+            </button>
+            <button type="button" onclick="window.close()" style="flex: 1; padding: 11px; border-radius: 12px; font-size: 11px; font-weight: bold; background: #e2e8f0; color: #334155; border: none; cursor: pointer;">
+                بستن
+            </button>
+        </div>
+
+        <div style="font-size: 10px; color: #64748B; text-align: center; line-height: 1.4; background: #fff; padding: 6px 10px; border-radius: 10px; border: 1px dashed #cbd5e1;">
+            💡 <strong style="color: #1e293b;">راهنمای چاپ مرورگر:</strong> در کادر پرینت، حاشیه (Margins) را روی <strong>None (صفر)</strong> بگذارید تا فیش دقیقاً بدون سفیدی لبه‌ها چاپ شود.
+        </div>
     </div>
 
     <!-- Thermal Receipt Content (Zafaran / Saffron Inspired Standard) -->
@@ -511,15 +610,45 @@
 
     </div>
 
-    @if($setting->auto_print)
     <script>
-        // Automatic print trigger on receipt open
-        window.onload = function() {
-            setTimeout(function() {
+        function setPaperFormat(format) {
+            document.body.classList.remove('format-80mm', 'format-58mm', 'format-a4');
+            document.body.classList.add('format-' + format);
+            ['80mm', '58mm', 'a4'].forEach(function(f) {
+                var el = document.getElementById('btn-' + f);
+                if (el) {
+                    if (f === format) {
+                        el.style.backgroundColor = '#284B63';
+                        el.style.color = '#fff';
+                    } else {
+                        el.style.backgroundColor = '#f1f5f9';
+                        el.style.color = '#475569';
+                    }
+                }
+            });
+        }
+
+        function triggerPrint() {
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(function() {
+                    window.print();
+                });
+            } else {
                 window.print();
-            }, 350);
-        };
+            }
+        }
+
+        @if($setting->auto_print)
+        window.addEventListener('load', function() {
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(function() {
+                    setTimeout(function() { window.print(); }, 250);
+                });
+            } else {
+                setTimeout(function() { window.print(); }, 400);
+            }
+        });
+        @endif
     </script>
-    @endif
 </body>
 </html>

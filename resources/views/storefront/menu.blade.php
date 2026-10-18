@@ -12,195 +12,20 @@
 
     @include('partials.pwa-meta', ['pwaPanel' => 'customer'])
 
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+@php
+    $siteContent = $siteContent ?? \App\Models\SiteContentSetting::getForCafe($cafe->id ?? 1);
+@endphp
 <body x-data="storefrontMenu()"
-      @keydown.escape="closeProductModal(); mobileDrawerOpen = false"
-      class="h-full antialiased selection:bg-[#3C6E71] selection:text-[#F7F9FA] bg-[#F7F9FA]/35 text-[#353535] pb-36 relative font-sans">
+      @keydown.escape="closeProductModal(); mobileDrawerOpen = false; closeCartDrawer()"
+      class="h-full antialiased selection:bg-[#387780] selection:text-white bg-[#F8FAFC] dark:bg-[#0F171B] text-[#19242B] dark:text-slate-100 pb-36 relative font-sans transition-colors">
 
     @include('partials.page-preloader')
 
-    <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#353535]/10 shadow-xs">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
-            
-            <!-- Brand Logo & Shiraz Info -->
-            <div class="flex items-center gap-3.5">
-                <a href="{{ route('storefront.menu') }}" class="relative flex-shrink-0 group">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-12 h-12 rounded-2xl object-cover border border-[#353535]/15 shadow-xs group-hover:scale-105 transition-transform">
-                    <span class="absolute -bottom-1 -start-1 w-3.5 h-3.5 rounded-full {{ (($cafe ?? false) instanceof \App\Models\Cafe) && $cafe->isOrderingOpen() ? 'bg-[#3C6E71]' : 'bg-amber-500' }} border-2 border-white shadow-2xs" title="{{ (($cafe ?? false) instanceof \App\Models\Cafe) && $cafe->isOrderingOpen() ? 'سفارش‌گیری باز است' : 'خارج از شیفت کاری' }}"></span>
-                </a>
-                <div>
-                    <a href="{{ route('storefront.menu') }}" class="text-base sm:text-lg font-black text-[#353535] block leading-tight hover:text-[#3C6E71] transition-colors">بی کافه (B Cafe)</a>
-                    <div class="flex flex-wrap items-center gap-2 mt-0.5">
-                        <span class="text-[11px] sm:text-xs text-[#353535]/65 flex items-center gap-1.5 font-bold">
-                            <svg class="w-3.5 h-3.5 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                            <span>شیراز • بار تخصصی قهوه</span>
-                        </span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-md font-bold {{ (($cafe ?? false) instanceof \App\Models\Cafe) && $cafe->isOrderingOpen() ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
-                            {{ (($cafe ?? false) instanceof \App\Models\Cafe) && $cafe->isOrderingOpen() ? 'سفارش‌گیری باز است' : 'خارج از شیفت (رزرو بعد)' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Desktop Navigation Links -->
-            <nav class="hidden md:flex items-center gap-6 text-xs font-black text-[#353535]/80">
-                <a href="#menu-catalog" class="hover:text-[#284B63] transition-colors">منوی کافه</a>
-                <a href="{{ route('storefront.subscriptions.index') }}" class="hover:text-[#284B63] transition-colors flex items-center gap-1">
-                    <span>اشتراک‌های روزانه</span>
-                    <span class="px-1.5 py-0.5 rounded bg-[#284B63]/15 text-[#284B63] text-[10px] font-bold">ویژه</span>
-                </a>
-                <a href="{{ route('storefront.about') }}" class="hover:text-[#284B63] transition-colors">درباره ما</a>
-                <a href="#footer-contact" class="hover:text-[#284B63] transition-colors">تماس و لوکیشن</a>
-            </nav>
-
-            <!-- Actions: Cart Capsule & User Profile / Mobile Drawer Toggle -->
-            <div class="flex items-center gap-2.5 sm:gap-3">
-                <!-- Cart Preview Button -->
-                <a href="{{ route('cart.index') }}" @click="syncToStorage()"
-                   class="relative px-3.5 py-2.5 bg-[#F7F9FA] hover:bg-[#3C6E71]/30 text-[#353535] rounded-xl text-xs font-black btn-tactile border border-[#353535]/12 flex items-center gap-2 shadow-2xs min-h-[44px]">
-                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    <span class="hidden sm:inline">سبد خرید</span>
-                    <span class="px-1.5 py-0.5 rounded-full bg-[#353535] text-[#F7F9FA] text-[11px] font-mono tabular-nums" x-text="cartTotalCount"></span>
-                </a>
-
-                @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
-                    <div class="relative hidden sm:block" x-data="{ userMenuOpen: false }">
-                        <button type="button" @click="userMenuOpen = !userMenuOpen"
-                                class="px-4 py-2.5 bg-[#3C6E71] text-white hover:bg-[#284B63] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 flex items-center gap-2 shadow-xs transition-colors min-h-[44px]">
-                            <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            <span>پنل مدیریت کافه</span>
-                            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
-
-                        <!-- Floating Popover Dropdown -->
-                        <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave="transition ease-in duration-100"
-                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                             class="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-[#353535]/15 py-2 z-50 overflow-hidden"
-                             style="display: none;">
-                            <div class="px-4 py-3 border-b border-[#353535]/10 bg-[#F7F9FA]">
-                                <div class="text-xs font-black text-[#353535]">{{ auth()->user()->name }}</div>
-                                <div class="text-[11px] text-[#3C6E71] font-bold">مدیر سیستم کافه</div>
-                            </div>
-                            <div class="py-1">
-                                <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                    <span>پیشخوان مدیریت</span>
-                                </a>
-                                <a href="{{ route('orders.live') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span>سفارشات زنده آشپزخانه / بار</span>
-                                </a>
-                                <a href="{{ route('products.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    <span>مدیریت منو و محصولات</span>
-                                </a>
-                                <a href="{{ route('admin.coupons.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                                    <span>کدهای تخفیف</span>
-                                </a>
-                                <a href="{{ route('admin.loyalty.settings') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-                                    <span>تنظیمات باشگاه و کادو تولد</span>
-                                </a>
-                            </div>
-                            <div class="border-t border-[#353535]/10 pt-1">
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                        <span>خروج از پنل مدیریت</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @elseif($customer ?? false)
-                    <div class="relative hidden sm:block" x-data="{ userMenuOpen: false }">
-                        <button type="button" @click="userMenuOpen = !userMenuOpen"
-                                class="px-4 py-2.5 bg-[#3C6E71]/15 text-[#353535] hover:bg-[#3C6E71] hover:text-[#F7F9FA] rounded-xl text-xs font-bold btn-tactile border border-[#3C6E71]/25 flex items-center gap-2 shadow-xs transition-colors min-h-[44px]">
-                            <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            <span>{{ $customer->name }}</span>
-                            <svg class="w-3.5 h-3.5 transition-transform duration-200" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </button>
-
-                        <!-- Floating Popover Dropdown -->
-                        <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave="transition ease-in duration-100"
-                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                             class="absolute left-0 mt-2 w-64 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-[#353535]/15 py-2 z-50 overflow-hidden"
-                             style="display: none;">
-                            <div class="px-4 py-3 border-b border-[#353535]/10 bg-[#F7F9FA]">
-                                <div class="text-xs font-black text-[#353535]">{{ $customer->name }}</div>
-                                <div class="text-[11px] text-[#353535]/70 font-mono mt-0.5">{{ $customer->phone }}</div>
-                                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-[#353535]/10 text-[11px]">
-                                    <span class="inline-flex items-center gap-1 font-bold text-[#3C6E71]">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                        {{ number_format($customer->loyalty_points ?? 0) }} امتیاز
-                                    </span>
-                                    <span class="text-[#353535]/40">•</span>
-                                    <span class="font-bold text-[#284B63]">{{ number_format($customer->wallet_balance ?? 0) }} ت کیف</span>
-                                </div>
-                            </div>
-                            <div class="py-1">
-                                <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                    <span>پیشخوان و وضعیت سفارش‌ها</span>
-                                </a>
-                                <a href="{{ route('customer.orders') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                    <span>تاریخچه سفارشات من</span>
-                                </a>
-                                <a href="{{ route('customer.club') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span>باشگاه مشتریان و امتیازات</span>
-                                </a>
-                                <a href="{{ route('customer.addresses') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    <span>آدرس‌های تحویل من</span>
-                                </a>
-                                <a href="{{ route('customer.subscriptions') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#353535] hover:bg-[#3C6E71]/10 hover:text-[#3C6E71] transition-colors">
-                                    <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    <span>اشتراک‌های قهوه من</span>
-                                </a>
-                            </div>
-                            <div class="border-t border-[#353535]/10 pt-1">
-                                <form method="POST" action="{{ route('customer.logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                        <span>خروج از حساب</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <a href="{{ route('customer.login') }}" class="hidden sm:flex px-4 py-2.5 bg-[#353535] text-[#F7F9FA] hover:bg-[#1E2912] rounded-xl text-xs font-bold btn-tactile border border-[#353535]/15 items-center gap-2 shadow-xs min-h-[44px]">
-                        <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        <span>ورود / عضویت</span>
-                    </a>
-                @endif
-
-                <!-- Mobile Hamburger Button -->
-                <button type="button" @click="mobileDrawerOpen = true"
-                        aria-label="منوی اصلی"
-                        class="md:hidden w-11 h-11 rounded-xl bg-[#F7F9FA]/80 hover:bg-[#F7F9FA] text-[#353535] flex items-center justify-center btn-tactile border border-[#353535]/12">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-            </div>
-        </div>
-    </header>
+    <!-- Unified Global Navigation Header -->
+    <x-storefront-header :activeTab="'menu'" :siteContent="$siteContent" :cafe="$cafe ?? null" />
 
     <!-- Mobile Navigation Drawer (Off-canvas) -->
     <div x-show="mobileDrawerOpen"
@@ -258,13 +83,13 @@
                         <span>درباره بی کافه شیراز</span>
                     </a>
 
-                    <a href="{{ route('cart.index') }}" class="flex items-center justify-between p-3 rounded-xl bg-[#F7F9FA]/50 text-[#353535] font-black text-xs">
+                    <button type="button" @click="mobileDrawerOpen = false; openCartDrawer()" class="w-full flex items-center justify-between p-3 rounded-xl bg-[#F7F9FA]/50 text-[#353535] font-black text-xs btn-tactile">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 text-[#284B63]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                             <span>سبد خرید</span>
                         </div>
                         <span class="px-2 py-0.5 rounded-full bg-[#353535] text-[#F7F9FA] text-[11px] font-mono tabular-nums" x-text="cartTotalCount"></span>
-                    </a>
+                    </button>
 
                     @if(auth()->check() && (auth()->user()->role === 'admin' || (method_exists(auth()->user(), 'isAdmin') && auth()->user()->isAdmin())))
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 p-3 rounded-xl bg-[#3C6E71] text-white font-black text-xs shadow-xs">
@@ -306,53 +131,78 @@
     <!-- Main Content Menu Sections -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-10">
 
-        <!-- Luxury Hero Banner (Black Forest & Copperwood) -->
-        <section id="cafe-features" class="relative overflow-hidden p-6 sm:p-10 rounded-3xl bg-gradient-to-br from-[#353535] via-[#1E2912] to-[#141C0C] text-[#F7F9FA] shadow-xl border border-[#3C6E71]/25">
-            <!-- Decorative Glow Rings -->
-            <div class="absolute -end-16 -top-16 w-64 h-64 rounded-full bg-[#284B63]/20 blur-3xl pointer-events-none"></div>
-            <div class="absolute -start-16 -bottom-16 w-64 h-64 rounded-full bg-[#3C6E71]/20 blur-3xl pointer-events-none"></div>
+        <!-- Cohesive Hero Banner (Brand Aligned with Cafe Logo) -->
+        <section id="cafe-features" class="relative overflow-hidden p-6 sm:p-8 lg:p-10 rounded-3xl bg-white dark:bg-[#19242B] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <!-- Subtle Ambient Background Accents -->
+            <div class="absolute -end-16 -top-16 w-72 h-72 rounded-full bg-teal-500/5 dark:bg-teal-500/10 blur-3xl pointer-events-none"></div>
+            <div class="absolute -start-16 -bottom-16 w-72 h-72 rounded-full bg-amber-500/5 dark:bg-amber-500/10 blur-3xl pointer-events-none"></div>
 
-            <div class="relative z-10 space-y-4 max-w-2xl">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#284B63] text-[#F7F9FA] text-xs font-black shadow-xs">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                    <span>بار تخصصی قهوه بی کافه شیراز</span>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                <!-- Content Column (8 cols) -->
+                <div class="lg:col-span-8 space-y-4 text-start">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#387780]/10 border border-[#387780]/20 text-[#387780] dark:text-teal-400 text-xs font-black shadow-2xs">
+                        <svg class="w-3.5 h-3.5 text-[#387780] dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                        <span>بار تخصصی قهوه بی کافه شیراز</span>
+                    </div>
+
+                    <!-- Main Headline -->
+                    <h1 class="text-2xl sm:text-4xl font-black text-[#19242B] dark:text-white leading-tight tracking-tight">
+                        {{ $siteContent->menu_title ?: 'طعم اصیل قهوه تازه‌برشت با عصاره‌گیری استاندارد' }}
+                    </h1>
+
+                    <!-- Subtitle -->
+                    <p class="text-xs sm:text-sm text-[#475569] dark:text-slate-300 leading-relaxed font-medium max-w-2xl">
+                        {{ $siteContent->menu_subtitle ?: 'تجربه سرو روی میز در فضای آرام کافه، یا تحویل داغ و سریع با پیک اختصاصی در تمام مناطق شیراز. با اشتراک‌های ماهانه قهوه، از تخفیف‌های ویژه و سرو روزانه بهره‌مند شوید.' }}
+                    </p>
+
+                    <!-- Feature Badges -->
+                    <div class="pt-1 flex flex-wrap items-center gap-2.5">
+                        <div class="flex items-center gap-2 text-xs font-bold bg-[#F8FAFC] dark:bg-slate-800/80 px-3.5 py-2 rounded-xl border border-[#E2E8F0] dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                            <svg class="w-4 h-4 text-[#387780] dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>آماده‌سازی فوری (۱۰ تا ۱۵ دقیقه)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs font-bold bg-[#F8FAFC] dark:bg-slate-800/80 px-3.5 py-2 rounded-xl border border-[#E2E8F0] dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                            <svg class="w-4 h-4 text-[#387780] dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                            <span>پیک اختصاصی و گرم در شیراز</span>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs font-bold bg-[#F8FAFC] dark:bg-slate-800/80 px-3.5 py-2 rounded-xl border border-[#E2E8F0] dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                            <svg class="w-4 h-4 text-[#387780] dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>۵٪ کش‌بک در کیف‌پول باشگاه مشتریان</span>
+                        </div>
+                    </div>
+
+                    <!-- CTAs -->
+                    <div class="pt-3 flex flex-wrap items-center gap-3">
+                        <a href="#menu-catalog" class="px-6 py-3 bg-[#387780] hover:bg-[#2E636B] text-white text-xs sm:text-sm font-black rounded-xl btn-tactile shadow-xs flex items-center gap-2">
+                            <span>مشاهده منو و ثبت سفارش</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </a>
+                        <a href="#coffee-subscriptions" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#19242B] dark:text-slate-100 text-xs sm:text-sm font-bold rounded-xl btn-tactile border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                            <span>پلن‌های اشتراک ماهانه</span>
+                            <svg class="w-4 h-4 text-[#387780] dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5z"/></svg>
+                        </a>
+                    </div>
                 </div>
 
-                <h2 class="text-2xl sm:text-4xl font-black text-[#F7F9FA] leading-tight tracking-tight">
-                    طعم اصیل قهوه تازه‌برشت با عصاره‌گیری استاندارد
-                </h2>
-
-                <p class="text-xs sm:text-sm text-[#F7F9FA]/85 leading-relaxed font-medium">
-                    تجربه سرو روی میز در فضای آرام کافه، یا تحویل داغ و سریع با پیک اختصاصی در تمام مناطق شیراز. با اشتراک‌های ماهانه قهوه، از تخفیف‌های ویژه و سرو روزانه بهره‌مند شوید.
-                </p>
-
-                <!-- Feature Badges (Strict Zero Emojis) -->
-                <div class="pt-2 flex flex-wrap items-center gap-3">
-                    <div class="flex items-center gap-2 text-xs font-bold bg-white/10 px-3.5 py-2 rounded-xl border border-white/15 backdrop-blur-xs">
-                        <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>آماده‌سازی فوری (۱۰ تا ۱۵ دقیقه)</span>
+                <!-- Brand Logo Card (4 cols) -->
+                <div class="lg:col-span-4 flex items-center justify-center">
+                    <div class="w-full max-w-xs p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-xs text-center space-y-3.5 relative group">
+                        <div class="relative mx-auto w-28 h-28 sm:w-32 sm:h-32">
+                            <div class="absolute -inset-2 rounded-2xl bg-[#387780]/15 dark:bg-[#387780]/30 blur-lg"></div>
+                            <img src="{{ asset('images/logo.jpeg') }}" alt="لوگوی بی کافه شیراز" class="relative w-full h-full rounded-2xl object-cover border border-[#E2E8F0] dark:border-slate-700 shadow-xs group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div>
+                            <span class="text-base font-black text-[#19242B] dark:text-white block">بی کافه (B Cafe)</span>
+                            <span class="text-xs text-[#387780] dark:text-teal-400 font-bold block mt-0.5">شیراز • بار تخصصی قهوه و منوی روز</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                            <span class="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>سرو حضوری در سالن و ارسال با پیک</span>
+                        </div>
                     </div>
-
-                    <div class="flex items-center gap-2 text-xs font-bold bg-white/10 px-3.5 py-2 rounded-xl border border-white/15 backdrop-blur-xs">
-                        <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-                        <span>پیک اختصاصی و بسته‌بندی گرم در شیراز</span>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-xs font-bold bg-white/10 px-3.5 py-2 rounded-xl border border-white/15 backdrop-blur-xs">
-                        <svg class="w-4 h-4 text-[#3C6E71]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>۵٪ کش‌بک در کیف‌پول باشگاه مشتریان</span>
-                    </div>
-                </div>
-
-                <!-- CTAs -->
-                <div class="pt-3 flex flex-wrap items-center gap-3">
-                    <a href="#menu-catalog" class="px-6 py-3 bg-[#284B63] hover:bg-[#9B561B] text-[#F7F9FA] text-xs sm:text-sm font-black rounded-xl btn-tactile shadow-md flex items-center gap-2">
-                        <span>مشاهده منو و ثبت سفارش</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </a>
-                    <a href="#coffee-subscriptions" class="px-5 py-3 bg-white/10 hover:bg-white/20 text-[#F7F9FA] text-xs sm:text-sm font-bold rounded-xl btn-tactile border border-white/20 flex items-center gap-2">
-                        <span>پلن‌های اشتراک ماهانه</span>
-                    </a>
                 </div>
             </div>
         </section>
@@ -549,41 +399,6 @@
         @endforeach
 
     </main>
-
-    <!-- Floating Sticky Cart Bottom Bar (Glass Pill Capsule) -->
-    <div x-show="cartTotalCount > 0"
-         x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="transform translate-y-full opacity-0"
-         x-transition:enter-end="transform translate-y-0 opacity-100"
-         x-transition:leave="transition ease-in duration-180"
-         x-transition:leave-start="transform translate-y-0 opacity-100"
-         x-transition:leave-end="transform translate-y-full opacity-0"
-         class="fixed bottom-20 md:bottom-6 inset-x-3 sm:inset-x-auto sm:start-1/2 sm:-translate-x-1/2 z-30 max-w-xl w-[calc(100%-1.5rem)] sm:w-full">
-        <div class="bg-[#353535]/95 backdrop-blur-md text-[#F7F9FA] border border-[#3C6E71]/40 rounded-3xl p-3 sm:p-4 shadow-2xl flex items-center justify-between gap-3">
-            <a href="{{ route('cart.index') }}" @click="syncToStorage()" class="flex items-center gap-3 min-w-0 hover:opacity-90 transition-opacity">
-                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#3C6E71] text-[#F7F9FA] flex items-center justify-center font-black text-xs sm:text-sm shadow-xs border border-[#F7F9FA]/20 flex-shrink-0">
-                    <span class="tabular-nums" x-text="cartTotalCount"></span>
-                </div>
-                <div class="min-w-0">
-                    <span class="text-[11px] sm:text-xs text-[#F7F9FA]/70 block font-bold truncate">مجموع اقلام (<span class="underline">مشاهده سبد</span>):</span>
-                    <span class="text-xs sm:text-base font-black text-[#3C6E71] tabular-nums" x-text="cartTotalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
-                </div>
-            </a>
-
-            <!-- Proceed to Checkout Button -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <a href="{{ route('cart.index') }}" @click="syncToStorage()"
-                   class="hidden sm:inline-flex px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-[#F7F9FA] font-bold rounded-xl text-xs btn-tactile border border-white/15">
-                    سبد خرید
-                </a>
-                <a href="{{ route('cart.checkout') }}" @click="syncToStorage()"
-                   class="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#284B63] hover:bg-[#9B561B] text-[#F7F9FA] font-black rounded-2xl text-xs sm:text-sm btn-tactile shadow-md flex items-center gap-1.5 min-h-[44px]">
-                    <span>تکمیل و پرداخت</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Mobile Bottom Navigation Bar -->
     <x-mobile-nav :active="'menu'"/>
@@ -854,67 +669,7 @@
     </div>
 
     <!-- Dedicated Custom Footer -->
-    <footer id="footer-contact" class="mt-20 border-t border-[#353535]/15 bg-white pt-12 pb-16">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Brand & Bio -->
-                <div class="md:col-span-2 space-y-3.5">
-                    <div class="flex items-center gap-3">
-                        <img src="{{ asset('images/logo.jpeg') }}" alt="بی کافه" class="w-12 h-12 rounded-2xl object-cover border border-[#353535]/15 shadow-xs">
-                        <div>
-                            <span class="text-base font-black text-[#353535] block">بی کافه (B Cafe)</span>
-                            <span class="text-xs text-[#3C6E71] font-bold">شیراز • بار تخصصی قهوه و منوی روز</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-[#353535]/70 leading-relaxed font-medium max-w-md">
-                        بی کافه، فضایی تخصصی برای علاقه‌مندان به عصاره‌گیری استاندارد، قهوه‌های تک‌خاستگاه و دم‌آوری حرفه‌ای در شهر شیراز. ارائه سرو حضوری با کیفیت بالا و تحویل با پیک اختصاصی در سراسر شهر.
-                    </p>
-                    <div class="flex items-center gap-3 pt-2">
-                        <span class="text-xs font-bold text-[#353535]">ما را دنبال کنید:</span>
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-xl bg-[#F7F9FA] text-[#353535] hover:bg-[#3C6E71] hover:text-[#F7F9FA] flex items-center justify-center transition-colors">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Shiraz Location & Hours -->
-                <div class="space-y-3">
-                    <h4 class="text-xs font-black text-[#353535] border-b border-[#353535]/10 pb-2">اطلاعات شعبه شیراز</h4>
-                    <div class="space-y-2 text-xs text-[#353535]/75 font-medium">
-                        <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 text-[#284B63] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                            <span>شیراز، خیابان ارم، بین کوچه ۱۴ و ۱۶، پلاک ۲۴</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-[#3C6E71] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>ساعات سرویس‌دهی: ۸:۰۰ الی ۲۳:۳۰</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-[#284B63] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            <span>تلفن تماس: ۰۷۱-۳۶۲۸۰۰۰۰</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Navigation Links -->
-                <div class="space-y-3">
-                    <h4 class="text-xs font-black text-[#353535] border-b border-[#353535]/10 pb-2">دسترسی سریع</h4>
-                    <ul class="space-y-1.5 text-xs text-[#353535]/75 font-bold">
-                        <li><a href="#menu-catalog" class="hover:text-[#284B63] transition-colors">منوی آنلاین و سفارش</a></li>
-                        <li><a href="{{ route('storefront.subscriptions.index') }}" class="hover:text-[#284B63] transition-colors">باشگاه اشتراک روزانه</a></li>
-                        <li><a href="{{ route('storefront.about') }}" class="hover:text-[#284B63] transition-colors">درباره ما و شعبه شیراز</a></li>
-                        <li><a href="{{ route('customer.login') }}" class="hover:text-[#284B63] transition-colors">ورود به حساب کاربری</a></li>
-                        <li><a href="{{ route('cart.checkout') }}" class="hover:text-[#284B63] transition-colors">سبد خرید و تسویه</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mt-10 pt-6 border-t border-[#353535]/10 flex flex-wrap items-center justify-between gap-4 text-[11px] text-[#353535]/60 font-medium">
-                <div>تمامی حقوق این وب‌سایت متعلق به کافه تخصصی بی (B Cafe) شیراز است.</div>
-                <div>طراحی و توسعه توسط امیرمحمد بهارلو</div>
-            </div>
-        </div>
-    </footer>
+    <x-storefront-footer :siteContent="$siteContent" :cafe="$cafe ?? null" />
 
     <!-- Floating Cart Capsule (Mobile & Desktop) -->
     <div x-show="cartTotalCount > 0"
@@ -929,17 +684,17 @@
         
         <!-- Mobile View (Full Bar) -->
         <div class="sm:hidden bg-[#353535] text-[#F7F9FA] rounded-2xl shadow-2xl p-3 flex items-center justify-between border border-white/10 backdrop-blur-md">
-            <div class="flex items-center gap-3">
+            <button type="button" @click="openCartDrawer()" class="flex items-center gap-3 text-start focus:outline-none">
                 <div class="relative w-10 h-10 rounded-xl bg-[#3C6E71] flex items-center justify-center flex-shrink-0">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-[#353535] font-black text-[11px] flex items-center justify-center tabular-nums" x-text="cartTotalCount"></span>
                 </div>
                 <div>
-                    <div class="text-[11px] text-white/70 font-medium">مجموع سبد خرید</div>
+                    <div class="text-[11px] text-white/70 font-medium">مجموع سبد خرید (مشاهده اقلام)</div>
                     <div class="text-xs font-black tabular-nums text-white" x-text="(cartTotalPrice.toLocaleString('fa-IR')) + ' تومان'"></div>
                 </div>
-            </div>
-            <a href="{{ route('cart.index') }}" @click="syncToStorage()"
+            </button>
+            <a href="{{ route('cart.checkout') }}" @click="syncToStorage()"
                class="px-4 py-2.5 rounded-xl bg-[#3C6E71] hover:bg-[#284B63] text-white text-xs font-black flex items-center gap-1.5 btn-tactile shadow-xs">
                 <span>تکمیل سفارش</span>
                 <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -948,22 +703,163 @@
 
         <!-- Desktop View (Floating Island Capsule) -->
         <div class="hidden sm:flex items-center gap-4 bg-[#353535]/95 text-[#F7F9FA] rounded-full shadow-2xl px-5 py-3 border border-white/15 backdrop-blur-md">
-            <div class="flex items-center gap-2.5">
+            <button type="button" @click="openCartDrawer()" class="flex items-center gap-2.5 text-start focus:outline-none hover:opacity-90 transition-opacity">
                 <div class="relative w-9 h-9 rounded-full bg-[#3C6E71] flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-[#353535] font-black text-[10px] flex items-center justify-center tabular-nums" x-text="cartTotalCount"></span>
                 </div>
                 <div class="text-right">
-                    <div class="text-[11px] text-white/70 font-medium"><span x-text="cartTotalCount"></span> آیتم در سبد</div>
+                    <div class="text-[11px] text-white/70 font-medium"><span x-text="cartTotalCount"></span> آیتم در سبد (کلیک برای نمایش)</div>
                     <div class="text-xs font-black tabular-nums text-white" x-text="(cartTotalPrice.toLocaleString('fa-IR')) + ' تومان'"></div>
                 </div>
-            </div>
+            </button>
             <div class="h-6 w-px bg-white/20"></div>
-            <a href="{{ route('cart.index') }}" @click="syncToStorage()"
+            <button type="button" @click="openCartDrawer()"
                class="px-4 py-2 rounded-full bg-[#3C6E71] hover:bg-[#284B63] text-white text-xs font-black flex items-center gap-1.5 btn-tactile shadow-xs transition-colors">
                 <span>مشاهده سبد و تسویه</span>
                 <svg class="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </a>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Cart Slide-Over Drawer (Off-Canvas Sheet) -->
+    <div x-show="cartDrawerOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end"
+         style="display: none;">
+
+        <div @click.outside="closeCartDrawer()"
+             x-show="cartDrawerOpen"
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="-translate-x-full rtl:translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full rtl:translate-x-full"
+             class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between overflow-hidden">
+
+            <!-- Drawer Header -->
+            <div class="p-5 border-b border-[#353535]/10 flex items-center justify-between bg-[#F7F9FA]">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#3C6E71]/15 text-[#3C6E71] flex items-center justify-center font-bold">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-[#353535]">سبد خرید شما</h3>
+                        <p class="text-[11px] text-[#353535]/65">
+                            <span class="tabular-nums" x-text="cartTotalCount"></span> آیتم انتخاب‌شده
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <template x-if="cart.length > 0">
+                        <button type="button" @click="clearAllCart()" class="text-[11px] font-bold text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors" title="خالی کردن سبد">
+                            خالی کردن
+                        </button>
+                    </template>
+                    <button type="button" @click="closeCartDrawer()" class="w-8 h-8 rounded-xl bg-white border border-[#353535]/15 text-[#353535] flex items-center justify-center hover:bg-[#F7F9FA] transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drawer Body: Items list -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 custom-scrollbar">
+                <!-- Empty Cart State -->
+                <template x-if="cart.length === 0">
+                    <div class="py-16 text-center space-y-4">
+                        <div class="w-20 h-20 rounded-full bg-[#F7F9FA] border-2 border-dashed border-[#284B63]/30 flex items-center justify-center mx-auto text-[#284B63]/60">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-black text-[#353535]">سبد خرید شما خالی است</h4>
+                            <p class="text-xs text-[#353535]/60 max-w-xs mx-auto">قهوه‌های تخصصی تازه رست‌شده و دسرهای کافه را انتخاب کنید.</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Items Loop -->
+                <template x-for="(item, idx) in cart" :key="item.id + '-' + idx">
+                    <div class="p-3.5 rounded-2xl bg-[#F7F9FA]/60 border border-[#353535]/10 space-y-2.5 hover:border-[#3C6E71]/40 transition-colors">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-black text-[#353535] truncate" x-text="item.name"></span>
+                                    <template x-if="item.type === 'subscription'">
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#387780] text-white">اشتراک</span>
+                                    </template>
+                                </div>
+                                <template x-if="item.options && Object.keys(item.options).length > 0">
+                                    <div class="text-[10px] text-[#3C6E71] font-bold mt-0.5">
+                                        <template x-for="(optVal, optKey) in item.options" :key="optKey">
+                                            <span class="inline-block me-1.5" x-text="optKey + ': ' + optVal"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="item.note">
+                                    <div class="text-[10px] text-slate-500 mt-0.5" x-text="'یادداشت: ' + item.note"></div>
+                                </template>
+                            </div>
+
+                            <button type="button" @click="removeCartIndex(idx)" class="text-slate-400 hover:text-rose-500 transition-colors p-1" title="حذف این قلم">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1 border-t border-[#353535]/8">
+                            <!-- Stepper Quantity Controls -->
+                            <div class="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-[#353535]/15 shadow-2xs">
+                                <button type="button" @click="decrementCartIndex(idx)" class="w-6 h-6 rounded-lg bg-[#F7F9FA] hover:bg-slate-200 text-[#353535] flex items-center justify-center font-bold text-xs transition-colors">
+                                    <template x-if="item.quantity > 1">
+                                        <span>-</span>
+                                    </template>
+                                    <template x-if="item.quantity <= 1">
+                                        <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </template>
+                                </button>
+                                <span class="w-6 text-center text-xs font-black font-mono tabular-nums text-[#353535]" x-text="item.quantity"></span>
+                                <button type="button" @click="incrementCartIndex(idx)" class="w-6 h-6 rounded-lg bg-[#3C6E71]/15 hover:bg-[#3C6E71] hover:text-white text-[#3C6E71] flex items-center justify-center font-bold text-xs transition-colors">
+                                    +
+                                </button>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="text-start">
+                                <span class="text-xs font-black text-[#284B63] tabular-nums" x-text="(item.price * item.quantity).toLocaleString('fa-IR') + ' ت'"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Drawer Footer: Subtotal & Actions -->
+            <div class="p-5 border-t border-[#353535]/10 bg-white space-y-3">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-[#353535]/70">مجموع کل اقلام:</span>
+                    <span class="text-base font-black text-[#284B63] tabular-nums" x-text="cartTotalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
+                </div>
+
+                <div class="space-y-2 pt-1">
+                    <template x-if="cart.length > 0">
+                        <a href="{{ route('cart.checkout') }}" @click="syncToStorage()"
+                           class="w-full py-3.5 rounded-2xl bg-[#284B63] hover:bg-[#1E374A] text-white font-black text-xs btn-tactile shadow-md flex items-center justify-center gap-2 transition-colors min-h-[46px]">
+                            <span>تکمیل و پرداخت سفارش</span>
+                            <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </template>
+                    <a href="{{ route('cart.index') }}" @click="syncToStorage()"
+                       class="w-full py-2.5 rounded-xl bg-[#F7F9FA] hover:bg-slate-200 text-[#353535] font-bold text-xs text-center block transition-colors border border-[#353535]/12">
+                        مشاهده صفحه کامل سبد خرید
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -974,6 +870,53 @@
             cart: JSON.parse(localStorage.getItem('bcafe_cart') || '[]'),
             searchQuery: '',
             mobileDrawerOpen: false,
+            cartDrawerOpen: false,
+
+            openCartDrawer() {
+                this.cartDrawerOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeCartDrawer() {
+                this.cartDrawerOpen = false;
+                document.body.style.overflow = '';
+            },
+
+            clearAllCart() {
+                if (confirm('آیا از خالی کردن تمام اقلام سبد خرید مطمئن هستید؟')) {
+                    this.cart = [];
+                    this.syncToStorage();
+                }
+            },
+
+            incrementCartIndex(idx) {
+                if (this.cart[idx]) {
+                    const item = this.cart[idx];
+                    const max = (item.stock !== null && item.stock !== undefined) ? item.stock : 99;
+                    if (item.quantity < max) {
+                        item.quantity++;
+                        this.syncToStorage();
+                    }
+                }
+            },
+
+            decrementCartIndex(idx) {
+                if (this.cart[idx]) {
+                    if (this.cart[idx].quantity > 1) {
+                        this.cart[idx].quantity--;
+                    } else {
+                        this.cart.splice(idx, 1);
+                    }
+                    this.syncToStorage();
+                }
+            },
+
+            removeCartIndex(idx) {
+                if (this.cart[idx]) {
+                    this.cart.splice(idx, 1);
+                    this.syncToStorage();
+                }
+            },
 
             // Product Popup Modal State
             productModalOpen: false,
