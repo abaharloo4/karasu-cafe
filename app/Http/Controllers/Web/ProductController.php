@@ -70,6 +70,13 @@ class ProductController extends Controller
             $uploaded = $file->store('products', 'public');
             $imagePath = '/storage/' . $uploaded;
 
+            // Mirror to public/storage if not a symlink
+            $publicDest = public_path('storage/' . $uploaded);
+            if (!is_link(public_path('storage'))) {
+                @mkdir(dirname($publicDest), 0755, true);
+                @copy(storage_path('app/public/' . $uploaded), $publicDest);
+            }
+
             \App\Models\MediaItem::firstOrCreate(
                 ['path' => $uploaded],
                 [
@@ -165,6 +172,10 @@ class ProductController extends Controller
                 if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanCurrent)) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanCurrent);
                 }
+                $oldPub = public_path('storage/' . $cleanCurrent);
+                if (file_exists($oldPub) && is_file($oldPub)) {
+                    @unlink($oldPub);
+                }
                 \App\Models\MediaItem::where('path', $cleanCurrent)->delete();
             }
             $imagePath = null;
@@ -172,8 +183,14 @@ class ProductController extends Controller
             // Delete old file from storage when replacing
             if ($imagePath) {
                 $cleanCurrent = ltrim(str_replace(['/storage/', 'storage/'], '', $imagePath), '/\\');
-                if (str_starts_with($cleanCurrent, 'products/') && \Illuminate\Support\Facades\Storage::disk('public')->exists($cleanCurrent)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanCurrent);
+                if (str_starts_with($cleanCurrent, 'products/')) {
+                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanCurrent)) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanCurrent);
+                    }
+                    $oldPub = public_path('storage/' . $cleanCurrent);
+                    if (file_exists($oldPub) && is_file($oldPub)) {
+                        @unlink($oldPub);
+                    }
                     \App\Models\MediaItem::where('path', $cleanCurrent)->delete();
                 }
             }
@@ -181,6 +198,13 @@ class ProductController extends Controller
             $file = $request->file('image_file');
             $uploaded = $file->store('products', 'public');
             $imagePath = '/storage/' . $uploaded;
+
+            // Mirror to public/storage if not a symlink
+            $publicDest = public_path('storage/' . $uploaded);
+            if (!is_link(public_path('storage'))) {
+                @mkdir(dirname($publicDest), 0755, true);
+                @copy(storage_path('app/public/' . $uploaded), $publicDest);
+            }
 
             \App\Models\MediaItem::firstOrCreate(
                 ['path' => $uploaded],
@@ -237,13 +261,26 @@ class ProductController extends Controller
         $rawImage = $product->getRawOriginal('image');
         if ($rawImage) {
             $cleanPath = ltrim(str_replace(['/storage/', 'storage/'], '', $rawImage), '/\\');
-            if (str_starts_with($cleanPath, 'products/') && \Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanPath);
+            if (str_starts_with($cleanPath, 'products/')) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($cleanPath);
+                }
+                $pubFile = public_path('storage/' . $cleanPath);
+                if (file_exists($pubFile) && is_file($pubFile)) {
+                    @unlink($pubFile);
+                }
                 \App\Models\MediaItem::where('path', $cleanPath)->delete();
             }
         }
 
         $product->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'محصول با موفقیت از سیستم حذف شد.',
+            ]);
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'محصول با موفقیت از سیستم حذف شد.');

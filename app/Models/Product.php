@@ -203,13 +203,28 @@ class Product extends Model
             return $value;
         }
 
+        // Direct static files in public directory (e.g. /images/... or images/...)
+        $cleanRelative = ltrim($value, '/\\');
+        $publicDirect = public_path($cleanRelative);
+        if (file_exists($publicDirect) && is_file($publicDirect)) {
+            return str_starts_with($value, '/') ? $value : '/' . $value;
+        }
+
         // Local storage file path: strip leading /storage/ or storage/
         $cleanPath = ltrim(str_replace(['/storage/', 'storage/'], '', $value), '/\\');
 
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
-            return null;
+        // Check if file exists in public/storage
+        $publicStorage = public_path('storage/' . $cleanPath);
+        if (file_exists($publicStorage) && is_file($publicStorage)) {
+            return '/storage/' . $cleanPath;
         }
 
+        // Check if file exists in storage/app/public
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+            return '/storage/' . $cleanPath;
+        }
+
+        // Return path formatted with leading / so web route fallback can serve it
         return str_starts_with($value, '/') ? $value : '/' . $value;
     }
 

@@ -23,6 +23,6 @@ class ProductPolicy
 
     public function delete(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isStaff();
     }
 }

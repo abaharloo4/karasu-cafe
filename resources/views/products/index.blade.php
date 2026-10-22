@@ -28,12 +28,12 @@
     </div>
 
     <!-- Category Filter Pills -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E7ECE4]">
-        <a href="{{ route('products.index') }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 {{ empty($categoryId) ? 'bg-[#3A5232] text-white shadow-md' : 'bg-[#FCFCFB] border border-[#D9E0D6] text-[#48504B] hover:bg-[#EEF2EC]' }}">
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E7ECE4] dark:border-slate-800">
+        <a href="{{ route('products.index') }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 {{ empty($categoryId) ? 'bg-[#387780] dark:bg-teal-600 text-white shadow-md' : 'bg-[#FCFCFB] dark:bg-slate-800 border border-[#D9E0D6] dark:border-slate-700 text-[#48504B] dark:text-slate-300 hover:bg-[#EEF2EC] dark:hover:bg-slate-700' }}">
             همه محصولات ({{ $products->count() }})
         </a>
         @foreach($categories as $cat)
-            <a href="{{ route('products.index', ['category_id' => $cat->id]) }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 {{ (string)$categoryId === (string)$cat->id ? 'bg-[#3A5232] text-white shadow-md' : 'bg-[#FCFCFB] border border-[#D9E0D6] text-[#48504B] hover:bg-[#EEF2EC]' }}">
+            <a href="{{ route('products.index', ['category_id' => $cat->id]) }}" class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex-shrink-0 {{ (string)$categoryId === (string)$cat->id ? 'bg-[#387780] dark:bg-teal-600 text-white shadow-md' : 'bg-[#FCFCFB] dark:bg-slate-800 border border-[#D9E0D6] dark:border-slate-700 text-[#48504B] dark:text-slate-300 hover:bg-[#EEF2EC] dark:hover:bg-slate-700' }}">
                 {{ $cat->name }}
             </a>
         @endforeach
@@ -42,76 +42,85 @@
     <!-- Products Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         @forelse($products as $product)
-            <div class="bg-[#FCFCFB] border border-[#D9E0D6] p-5 rounded-3xl space-y-3 flex flex-col justify-between shadow-sm">
+            <div class="bg-[#FCFCFB] dark:bg-[#19242B] border border-[#D9E0D6] dark:border-slate-800 p-5 rounded-3xl space-y-3 flex flex-col justify-between shadow-sm">
                 <div class="space-y-3">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-12 h-12 rounded-2xl bg-white border border-[#D9E0D6] flex items-center justify-center text-[#3A5232] flex-shrink-0 shadow-2xs overflow-hidden">
+                            <div class="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 border border-[#D9E0D6] dark:border-slate-700 flex items-center justify-center text-[#387780] dark:text-teal-400 flex-shrink-0 shadow-2xs overflow-hidden">
                                 @if($product->image)
                                     <img src="{{ $product->image }}" alt="{{ $product->name }}" class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden')">
                                     <div class="hidden w-full h-full flex items-center justify-center">
-                                        <x-product-icon :product="$product" class="w-6 h-6" />
+                                        <x-product-icon :product="$product" class="w-6 h-6 text-[#387780] dark:text-teal-400" />
                                     </div>
                                 @else
-                                    <x-product-icon :product="$product" class="w-6 h-6" />
+                                    <x-product-icon :product="$product" class="w-6 h-6 text-[#387780] dark:text-teal-400" />
                                 @endif
                             </div>
                             <div class="min-w-0">
-                                <h3 class="text-sm font-extrabold text-[#1F2520] truncate">{{ $product->name }}</h3>
+                                <h3 class="text-sm font-extrabold text-[#1F2520] dark:text-white truncate">{{ $product->name }}</h3>
                                 <div class="flex items-center gap-1.5 flex-wrap mt-1">
-                                    <span class="text-[10px] text-[#C8A35A] font-bold bg-[#F7F0DE] px-2 py-0.5 rounded-md">
+                                    <span class="text-[10px] text-[#C8A35A] dark:text-amber-400 font-bold bg-[#F7F0DE] dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
                                         {{ $product->category->name ?? 'بدون دسته‌بندی' }}
                                     </span>
                                     @if($product->stock === null)
-                                        <span class="text-[10px] text-slate-600 bg-slate-100 font-bold px-1.5 py-0.5 rounded-md">
+                                        <span class="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 font-bold px-1.5 py-0.5 rounded-md">
                                             موجودی: نامحدود
                                         </span>
                                     @elseif($product->stock > 0)
-                                        <span class="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-md">
+                                        <span class="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 font-bold px-1.5 py-0.5 rounded-md">
                                             موجودی: {{ $product->stock }} عدد
                                         </span>
                                     @else
-                                        <span class="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 font-black px-1.5 py-0.5 rounded-md">
+                                        <span class="text-[10px] text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 font-black px-1.5 py-0.5 rounded-md">
                                             ناموجود
                                         </span>
                                     @endif
                                 </div>
                             </div>
                         </div>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 {{ $product->status === 'active' ? 'bg-[#EAF2E7] text-[#4F8A4B]' : 'bg-[#FDF2F2] text-[#C94A4A]' }}">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 {{ $product->status === 'active' ? 'bg-[#EAF2E7] text-[#4F8A4B] dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-[#FDF2F2] text-[#C94A4A] dark:bg-rose-950/40 dark:text-rose-400' }}">
                             {{ $product->status === 'active' ? 'فعال' : 'غیرفعال' }}
                         </span>
                     </div>
 
                     @if($product->isHourlyDiscountActive())
-                        <div class="px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-amber-800 flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div class="px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800 flex items-center justify-between text-[11px]">
+                            <span class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                 </svg>
                                 <span>{{ $product->discount_percent }}٪ تخفیف فعال</span>
                             </span>
-                            <span class="text-amber-700 font-medium text-[10px]">
+                            <span class="text-amber-700 dark:text-amber-400 font-medium text-[10px]">
                                 {{ $product->discountRemainingHuman() }}
                             </span>
                         </div>
                     @endif
                 </div>
 
-                <div class="border-t border-[#E7ECE4] pt-3 flex items-center justify-between">
+                <div class="border-t border-[#E7ECE4] dark:border-slate-800 pt-3 flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] text-[#6E756F] block">قیمت:</span>
+                        <span class="text-[11px] text-[#6E756F] dark:text-slate-400 block">قیمت:</span>
                         @if($product->isHourlyDiscountActive())
                             <div class="flex items-baseline gap-1.5">
                                 <span class="text-xs text-slate-400 line-through">{{ number_format($product->price) }}</span>
-                                <span class="text-sm font-black text-rose-600">{{ number_format($product->effective_price) }} تومان</span>
+                                <span class="text-sm font-black text-rose-600 dark:text-rose-400">{{ number_format($product->effective_price) }} تومان</span>
                             </div>
                         @else
-                            <span class="text-sm font-black text-[#3A5232]">{{ number_format($product->price) }} تومان</span>
+                            <span class="text-sm font-black text-[#387780] dark:text-teal-400">{{ number_format($product->price) }} تومان</span>
                         @endif
                     </div>
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('products.edit', $product) }}" class="px-3 py-1.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] text-[#1F2520] font-semibold rounded-lg text-xs transition-colors">ویرایش</a>
+                    @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
+                        <div class="flex items-center gap-1.5">
+                            <a href="{{ route('products.edit', $product) }}" class="px-3 py-1.5 bg-[#EEF2EC] hover:bg-[#D9E0D6] dark:bg-slate-800 dark:hover:bg-slate-700 text-[#1F2520] dark:text-slate-100 font-semibold rounded-lg text-xs transition-colors">ویرایش</a>
+                            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('آیا از حذف آیتم «{{ addslashes($product->name) }}» از منو مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold rounded-lg text-xs transition-colors" title="حذف محصول از منو">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
                     @endif
                 </div>
             </div>

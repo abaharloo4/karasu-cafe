@@ -411,13 +411,28 @@
             <textarea name="description" rows="3" placeholder="توضیحات کلی یا مشخصات جهت نمایش در منو..." class="w-full px-4 py-3 rounded-xl bg-[#F7F9FA]/40 border border-[#353535]/15 text-[#353535] focus:outline-none focus:border-[#3C6E71] focus:bg-white text-xs leading-relaxed font-medium">{{ old('description', $product->description) }}</textarea>
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#353535]/10">
-            <a href="{{ route('products.index') }}" class="px-5 py-2.5 bg-[#F7F9FA] hover:bg-[#F7F9FA]/80 text-[#353535] font-bold rounded-xl text-xs transition-all">انصراف</a>
-            <button type="submit" class="px-6 py-2.5 bg-[#353535] hover:bg-[#1E2912] text-[#F7F9FA] font-black rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>به‌روزرسانی محصول</span>
-            </button>
+        <div class="flex items-center justify-between gap-3 pt-4 border-t border-[#353535]/10">
+            <div>
+                <button type="button"
+                        onclick="if(confirm('آیا از حذف کامل محصول «{{ addslashes($product->name) }}» از منوی کافه مطمئن هستید؟')){ document.getElementById('delete-product-form').submit(); }"
+                        class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 btn-tactile border border-rose-200/80 dark:border-rose-900/50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <span>حذف این محصول از منو</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('products.index') }}" class="px-5 py-2.5 bg-[#F7F9FA] hover:bg-[#F7F9FA]/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#353535] dark:text-slate-200 font-bold rounded-xl text-xs transition-all">انصراف</a>
+                <button type="submit" class="px-6 py-2.5 bg-[#387780] hover:bg-[#2E636B] text-white font-black rounded-xl text-xs transition-all shadow-md flex items-center gap-1.5 btn-tactile">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>به‌روزرسانی محصول</span>
+                </button>
+            </div>
         </div>
+    </form>
+
+    <form id="delete-product-form" action="{{ route('products.destroy', $product) }}" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
     </form>
 </div>
 @endsection

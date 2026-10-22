@@ -103,6 +103,13 @@ class MediaLibraryController extends Controller
             $path = $file->storeAs('media', $filename, 'public');
             $cleanPath = str_replace('\\', '/', $path);
 
+            // Mirror to public/storage if not a symlink
+            $publicDest = public_path('storage/' . $cleanPath);
+            if (!is_link(public_path('storage'))) {
+                @mkdir(dirname($publicDest), 0755, true);
+                @copy(storage_path('app/public/' . $cleanPath), $publicDest);
+            }
+
             $mediaItem = MediaItem::create([
                 'cafe_id' => $cafeId,
                 'filename' => $filename,
@@ -184,6 +191,10 @@ class MediaLibraryController extends Controller
             $cleanPath = str_replace('\\', '/', $mediaItem->path);
             if (Storage::disk('public')->exists($cleanPath)) {
                 Storage::disk('public')->delete($cleanPath);
+            }
+            $pubFile = public_path('storage/' . $cleanPath);
+            if (file_exists($pubFile) && is_file($pubFile)) {
+                @unlink($pubFile);
             }
             $mediaItem->delete();
 

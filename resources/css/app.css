@@ -140,7 +140,9 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
 }
 
 /* Dark Mode Surface Overrides for Legacy hardcoded classes */
-.dark .bg-white {
+.dark .bg-white,
+.dark .bg-\[\#FFFFFF\],
+.dark .bg-\[\#FCFCFB\] {
     background-color: #19242B !important;
 }
 .dark .bg-white\/95 {
@@ -153,7 +155,12 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
     background-color: rgba(20, 29, 34, 0.8) !important;
 }
 .dark .bg-\[\#F8FAFC\],
-.dark .bg-\[\#F7F9FA\] {
+.dark .bg-\[\#F7F9FA\],
+.dark .bg-\[\#EEF2EC\],
+.dark .bg-\[\#EEF2F3\],
+.dark .bg-\[\#F4F6F4\],
+.dark .bg-slate-50,
+.dark .bg-gray-50 {
     background-color: #141D22 !important;
 }
 .dark .bg-\[\#F7F9FA\]\/60,
@@ -162,36 +169,72 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, textarea, select {
 .dark .bg-\[\#F7F9FA\]\/35 {
     background-color: rgba(20, 29, 34, 0.6) !important;
 }
-.dark .bg-\[\#F1F5F9\] {
+.dark .bg-\[\#F1F5F9\],
+.dark .bg-slate-100,
+.dark .bg-gray-100 {
     background-color: #1E2B33 !important;
+}
+.dark .bg-slate-200,
+.dark .bg-gray-200 {
+    background-color: #24343E !important;
 }
 
 /* Dark mode text colors */
 .dark .text-\[\#353535\],
 .dark .text-\[\#19242B\],
+.dark .text-\[\#1F2520\],
+.dark .text-\[\#2F3630\],
+.dark .text-slate-900,
 .dark .text-slate-800,
-.dark .text-slate-900 {
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
     color: #F1F5F9 !important;
 }
 .dark .text-\[\#353535\]\/75,
 .dark .text-\[\#353535\]\/70,
 .dark .text-\[\#353535\]\/65,
 .dark .text-\[\#353535\]\/60,
+.dark .text-\[\#48504B\],
+.dark .text-\[\#6E756F\],
+.dark .text-\[\#8A918B\],
 .dark .text-\[\#64748B\],
 .dark .text-slate-600,
-.dark .text-slate-500 {
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500 {
     color: #94A3B8 !important;
 }
+.dark .text-\[\#3A5232\] {
+    color: #5EEAD4 !important;
+}
 
-/* Dark mode borders */
+/* Dark mode borders & dividers */
+.dark .border-slate-100,
 .dark .border-slate-200,
 .dark .border-slate-200\/80,
+.dark .border-slate-300,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
 .dark .border-\[\#E2E8F0\],
 .dark .border-\[\#D9D9D9\],
+.dark .border-\[\#D9E0D6\],
+.dark .border-\[\#CCD5C8\],
+.dark .border-\[\#E7ECE4\],
 .dark .border-\[\#353535\]\/15,
 .dark .border-\[\#353535\]\/12,
 .dark .border-\[\#353535\]\/10,
 .dark .border-\[\#353535\]\/8 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-\[\#E7ECE4\] > :not([hidden]) ~ :not([hidden]),
+.dark .divide-\[\#E2E8F0\] > :not([hidden]) ~ :not([hidden]) {
     border-color: rgba(255, 255, 255, 0.08) !important;
 }
 

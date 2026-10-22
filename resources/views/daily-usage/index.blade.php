@@ -120,18 +120,18 @@
     @endif
 
     <!-- Two-Column POS Layout (Matching Screen 2 of Mockup) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-        <!-- Column 1 (Right in RTL): Menu Catalog (7 Cols) -->
-        <div class="lg:col-span-7 space-y-4">
+        <!-- Column 1 (Right in RTL): Menu Catalog (8 Cols) -->
+        <div class="lg:col-span-8 space-y-4">
             <!-- Search & Category Filters -->
-            <div class="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs space-y-3">
+            <div class="bg-white dark:bg-[#19242B] border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 rounded-2xl shadow-xs space-y-3">
                 <!-- Search input -->
                 <div class="relative w-full">
                     <input type="text"
                            x-model="productSearch"
                            placeholder="جستجوی محصول..."
-                           class="w-full ps-9 pe-4 py-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#387780] focus:bg-white transition-all">
+                           class="w-full ps-9 pe-4 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#387780] focus:bg-white dark:focus:bg-[#141D22] transition-all">
                     <svg class="w-4 h-4 text-slate-400 absolute start-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
 
@@ -139,23 +139,23 @@
                 <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
                     <button type="button"
                             @click="selectedCategory = 'all'"
-                            :class="selectedCategory === 'all' ? 'bg-[#19242B] text-white' : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600'"
-                            class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap btn-tactile transition-colors">
+                            :class="selectedCategory === 'all' ? 'bg-[#19242B] dark:bg-teal-600 text-white shadow-2xs' : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap btn-tactile transition-colors">
                         همه
                     </button>
                     @foreach($categories as $cat)
                         <button type="button"
                                 @click="selectedCategory = '{{ $cat->id }}'"
-                                :class="selectedCategory === '{{ $cat->id }}' ? 'bg-[#387780] text-white' : 'bg-slate-100 hover:bg-slate-200/80 text-slate-600'"
-                                class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap btn-tactile transition-colors">
+                                :class="selectedCategory === '{{ $cat->id }}' ? 'bg-[#387780] text-white shadow-2xs' : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap btn-tactile transition-colors">
                             {{ $cat->name }}
                         </button>
                     @endforeach
                 </div>
             </div>
 
-            <!-- Product Grid (3 cols, Photo Cards with circular + button) -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 max-h-[640px] overflow-y-auto custom-scrollbar p-0.5">
+            <!-- Product Grid (6 columns on desktop, touch tiles with circular + button) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5 max-h-[720px] overflow-y-auto custom-scrollbar p-0.5">
                 @foreach($allProducts as $product)
                     @php
                         $posProductData = [
@@ -169,33 +169,36 @@
                     @endphp
                     <div x-show="matchesFilter('{{ $product->category_id }}', '{{ addslashes($product->name) }}')"
                          @click="openProductModal({{ json_encode($posProductData) }})"
-                         class="bg-white border border-slate-200/80 hover:border-[#387780] rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
+                         class="bg-white dark:bg-[#19242B] border border-slate-200/80 dark:border-slate-800 hover:border-[#387780] dark:hover:border-teal-400 rounded-xl overflow-hidden shadow-2xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between">
                         <!-- Product Image / Banner -->
-                        <div class="h-28 bg-gradient-to-br from-slate-100 to-teal-50 flex items-center justify-center relative overflow-hidden">
+                        <div class="h-20 bg-gradient-to-br from-slate-100 to-teal-50 dark:from-slate-800/80 dark:to-slate-900 flex items-center justify-center relative overflow-hidden">
                             @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <img src="{{ $product->image }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.classList.remove('hidden')">
+                                <div class="hidden w-full h-full flex items-center justify-center">
+                                    <x-product-icon :product="$product" class="w-5 h-5 text-[#387780] dark:text-teal-400" />
+                                </div>
                             @else
-                                <div class="w-12 h-12 rounded-2xl bg-white/80 border border-slate-200/60 text-[#387780] flex items-center justify-center shadow-xs">
-                                    <x-product-icon :product="$product" class="w-6 h-6 text-[#387780]" />
+                                <div class="w-9 h-9 rounded-xl bg-white/80 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-[#387780] dark:text-teal-400 flex items-center justify-center shadow-xs">
+                                    <x-product-icon :product="$product" class="w-5 h-5 text-[#387780] dark:text-teal-400" />
                                 </div>
                             @endif
                         </div>
 
                         <!-- Card Footer Details -->
-                        <div class="p-3 space-y-1.5">
-                            <span class="text-xs font-bold text-slate-800 block truncate group-hover:text-[#387780] transition-colors">
+                        <div class="p-2 space-y-1">
+                            <span class="text-[11px] font-bold text-slate-800 dark:text-slate-100 block truncate group-hover:text-[#387780] dark:group-hover:text-teal-400 transition-colors leading-tight" title="{{ $product->name }}">
                                 {{ $product->name }}
                             </span>
 
-                            <div class="flex items-center justify-between pt-1">
-                                <span class="text-xs font-black text-slate-900 tabular-nums">
-                                    {{ number_format($product->price) }} <span class="text-[10px] font-normal text-slate-400">تومان</span>
+                            <div class="flex items-center justify-between pt-0.5">
+                                <span class="text-[11px] font-black text-slate-900 dark:text-teal-300 tabular-nums">
+                                    {{ number_format($product->price) }} <span class="text-[9px] font-normal text-slate-400">ت</span>
                                 </span>
                                 <!-- Circular Teal + Button -->
                                 <button type="button"
                                         @click.stop="addItem({{ $product->id }}, '{{ addslashes($product->name) }}', {{ $product->price }})"
                                         title="افزودن به سبد"
-                                        class="w-7 h-7 rounded-full bg-[#387780] hover:bg-[#2E636B] text-white flex items-center justify-center font-bold text-base shadow-xs btn-tactile">
+                                        class="w-6 h-6 rounded-full bg-[#387780] hover:bg-[#2E636B] dark:bg-teal-600 dark:hover:bg-teal-500 text-white flex items-center justify-center font-bold text-sm shadow-xs btn-tactile shrink-0">
                                     +
                                 </button>
                             </div>
@@ -205,15 +208,15 @@
             </div>
         </div>
 
-        <!-- Column 2 (Left in RTL): Current Order Ticket (5 Cols) -->
-        <div class="lg:col-span-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4 sticky top-24">
+        <!-- Column 2 (Left in RTL): Current Order Ticket (4 Cols) -->
+        <div class="lg:col-span-4 bg-white dark:bg-[#19242B] border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-4 sticky top-24">
             <!-- Ticket Header -->
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div>
-                    <h2 class="text-sm font-black text-slate-800">سفارش جاری</h2>
+                    <h2 class="text-sm font-black text-slate-800 dark:text-white">سفارش جاری</h2>
                     <span class="text-[11px] text-slate-400">
                         @if($customer ?? false)
-                            مشتری: <span class="text-slate-700 font-bold">{{ $customer->name }}</span>
+                            مشتری: <span class="text-slate-700 dark:text-slate-200 font-bold">{{ $customer->name }}</span>
                         @else
                             مشتری حضوری
                         @endif
@@ -226,13 +229,13 @@
 
             <!-- Free item toggle for subscription customers inside cart -->
             @if(($customer ?? false) && ($activeSubscription ?? false) && !($hasUsedToday ?? true) && ($allowedProducts ?? collect())->count() > 0)
-                <div class="p-3 rounded-xl bg-teal-50 border border-teal-200/70 space-y-2">
+                <div class="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/70 dark:border-teal-800/60 space-y-2">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" x-model="useFreeItem" class="w-4 h-4 rounded text-[#387780] focus:ring-[#387780]">
-                        <span class="text-xs font-bold text-slate-800">اعمال سهمیه رایگان امروز در این فاکتور</span>
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">اعمال سهمیه رایگان امروز در این فاکتور</span>
                     </label>
                     <div x-show="useFreeItem" x-transition class="mt-1">
-                        <select x-model="freeProductId" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-bold focus:outline-none focus:border-[#387780]">
+                        <select x-model="freeProductId" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold focus:outline-none focus:border-[#387780]">
                             <option value="">-- انتخاب قهوه سهمیه --</option>
                             @foreach($allowedProducts as $fp)
                                 <option value="{{ $fp->id }}">{{ $fp->name }} (۰ تومان)</option>
@@ -244,31 +247,31 @@
 
             <!-- Empty Cart State -->
             <div x-show="cart.length === 0 && !useFreeItem" class="py-12 text-center space-y-2">
-                <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-300 flex items-center justify-center mx-auto border border-slate-100">
+                <div class="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-600 flex items-center justify-center mx-auto border border-slate-100 dark:border-slate-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                 </div>
-                <div class="text-xs font-bold text-slate-500">سبد سفارش خالی است</div>
-                <div class="text-[11px] text-slate-400">آیتم‌های مورد نظر را از کاتالوگ انتخاب نمایید یا سهمیه اشتراک را فعال کنید.</div>
+                <div class="text-xs font-bold text-slate-500 dark:text-slate-400">سبد سفارش خالی است</div>
+                <div class="text-[11px] text-slate-400 dark:text-slate-500">آیتم‌های مورد نظر را از کاتالوگ انتخاب نمایید یا سهمیه اشتراک را فعال کنید.</div>
             </div>
 
             <!-- Cart Items List (Matching Screen 2 of Mockup) -->
             <div x-show="cart.length > 0" class="space-y-2.5 max-h-72 overflow-y-auto custom-scrollbar">
                 <template x-for="(item, index) in cart" :key="index">
-                    <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center justify-between gap-3">
+                    <div class="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                         <div class="min-w-0 flex-1">
-                            <span class="text-xs font-bold text-slate-800 block truncate" x-text="item.name"></span>
-                            <span class="text-xs font-black text-slate-700 tabular-nums" x-text="(item.price * item.quantity).toLocaleString('fa-IR') + ' ت'"></span>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-100 block truncate" x-text="item.name"></span>
+                            <span class="text-xs font-black text-slate-700 dark:text-teal-300 tabular-nums" x-text="(item.price * item.quantity).toLocaleString('fa-IR') + ' ت'"></span>
                         </div>
 
                         <!-- Stepper Controls [ - ] [ 1 ] [ + ] -->
-                        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5">
-                            <button @click="decrementItem(index)" type="button" class="w-6 h-6 rounded bg-slate-50 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center btn-tactile">−</button>
-                            <span class="w-6 text-center font-bold text-xs text-slate-800 tabular-nums" x-text="item.quantity"></span>
-                            <button @click="incrementItem(index)" type="button" class="w-6 h-6 rounded bg-slate-50 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center btn-tactile">+</button>
+                        <div class="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-0.5">
+                            <button @click="decrementItem(index)" type="button" class="w-6 h-6 rounded bg-slate-50 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center btn-tactile">−</button>
+                            <span class="w-6 text-center font-bold text-xs text-slate-800 dark:text-slate-100 tabular-nums" x-text="item.quantity"></span>
+                            <button @click="incrementItem(index)" type="button" class="w-6 h-6 rounded bg-slate-50 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center btn-tactile">+</button>
                         </div>
 
                         <!-- Delete Button -->
-                        <button @click="removeItem(index)" type="button" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center btn-tactile">
+                        <button @click="removeItem(index)" type="button" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center btn-tactile">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                     </div>
@@ -276,21 +279,21 @@
             </div>
 
             <!-- Total Price & Final Submit -->
-            <div x-show="cart.length > 0 || (useFreeItem && freeProductId)" class="pt-3 border-t border-slate-100 space-y-3">
-                <div class="space-y-1.5 text-xs text-slate-500">
+            <div x-show="cart.length > 0 || (useFreeItem && freeProductId)" class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div class="space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <div class="flex items-center justify-between">
                         <span>جمع اقلام پولی:</span>
-                        <span class="font-bold text-slate-700 tabular-nums" x-text="totalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
+                        <span class="font-bold text-slate-700 dark:text-slate-200 tabular-nums" x-text="totalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
                     </div>
-                    <div x-show="useFreeItem && freeProductId" class="flex items-center justify-between text-emerald-600 font-bold">
+                    <div x-show="useFreeItem && freeProductId" class="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                         <span>سهمیه رایگان روزانه:</span>
                         <span>۱ فنجان رایگان</span>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-sm sm:text-base border-t border-slate-100 pt-2">
-                    <span class="font-bold text-slate-800">مبلغ نهایی:</span>
-                    <span class="font-black text-lg text-slate-900 tabular-nums" x-text="totalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
+                <div class="flex items-center justify-between text-sm sm:text-base border-t border-slate-100 dark:border-slate-800 pt-2">
+                    <span class="font-bold text-slate-800 dark:text-slate-100">مبلغ نهایی:</span>
+                    <span class="font-black text-lg text-slate-900 dark:text-white tabular-nums" x-text="totalPrice.toLocaleString('fa-IR') + ' تومان'"></span>
                 </div>
 
                 <form method="POST" action="{{ route('daily-usage.store-paid') }}" @submit="populateForm($event)">
@@ -306,7 +309,7 @@
                     @endif
                     <div id="items-container"></div>
 
-                    <button type="submit" class="w-full py-3.5 bg-[#387780] hover:bg-[#2E636B] text-white font-bold rounded-xl text-sm btn-tactile shadow-sm flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full py-3.5 bg-[#387780] hover:bg-[#2E636B] dark:bg-teal-600 dark:hover:bg-teal-500 text-white font-bold rounded-xl text-sm btn-tactile shadow-sm flex items-center justify-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         <span>ثبت سفارش</span>
                     </button>
@@ -332,7 +335,7 @@
              x-transition:enter="transition ease-out duration-250"
              x-transition:enter-start="scale-95 opacity-0"
              x-transition:enter-end="scale-100 opacity-100"
-             class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+             class="w-full max-w-md bg-white dark:bg-[#19242B] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
 
             <!-- Modal Header -->
             <div class="p-5 bg-[#19242B] text-white flex items-center justify-between">
@@ -348,33 +351,33 @@
             <!-- Modal Body -->
             <div class="p-5 space-y-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-slate-500 font-medium">قیمت واحد:</span>
-                    <span class="text-base font-black text-slate-900 tabular-nums"
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">قیمت واحد:</span>
+                    <span class="text-base font-black text-slate-900 dark:text-teal-300 tabular-nums"
                           x-text="modalProduct ? (Number(modalProduct.price).toLocaleString('fa-IR') + ' تومان') : ''"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <span class="text-xs font-bold text-slate-700">توضیحات محصول:</span>
-                    <p class="text-xs text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100"
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">توضیحات محصول:</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-100 dark:border-slate-800"
                        x-text="modalProduct ? modalProduct.description : ''"></p>
                 </div>
 
                 <!-- Quantity Stepper -->
-                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <span class="text-xs font-bold text-slate-700">تعداد:</span>
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">تعداد:</span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="modalQuantity > 1 ? modalQuantity-- : null"
-                                class="w-8 h-8 rounded-lg bg-white text-slate-700 font-bold text-base flex items-center justify-center btn-tactile shadow-2xs border border-slate-200">−</button>
-                        <span class="w-8 text-center font-black text-xs text-slate-800 tabular-nums" x-text="modalQuantity"></span>
+                                class="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-base flex items-center justify-center btn-tactile shadow-2xs border border-slate-200 dark:border-slate-700">−</button>
+                        <span class="w-8 text-center font-black text-xs text-slate-800 dark:text-white tabular-nums" x-text="modalQuantity"></span>
                         <button type="button" @click="modalQuantity++"
-                                class="w-8 h-8 rounded-lg bg-[#387780] text-white font-bold text-base flex items-center justify-center btn-tactile shadow-2xs">+</button>
+                                class="w-8 h-8 rounded-lg bg-[#387780] hover:bg-[#2E636B] text-white font-bold text-base flex items-center justify-center btn-tactile shadow-2xs">+</button>
                     </div>
                 </div>
             </div>
 
             <!-- Modal Footer -->
-            <div class="p-4 border-t border-slate-100 bg-white flex items-center gap-2.5">
-                <button type="button" @click="closeProductModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 text-xs font-bold text-slate-600 hover:bg-slate-200">
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#19242B] flex items-center gap-2.5">
+                <button type="button" @click="closeProductModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
                     انصراف
                 </button>
                 <button type="button" @click="confirmModalToCart()"

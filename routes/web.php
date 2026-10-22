@@ -176,6 +176,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/admin/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
     // Media Library Management
     Route::get('/admin/media', [\App\Http\Controllers\Web\MediaLibraryController::class, 'index'])->name('admin.media.index');
@@ -291,6 +292,33 @@ Route::post('/pwa/event', [\App\Http\Controllers\Web\PwaController::class, 'logE
 
 // Internal Web OPcache Reset Hook (Protected by Secret Key, outside auth for deploy.sh curl)
 Route::get('/system/opcache-clear', [\App\Http\Controllers\Web\DeploymentController::class, 'opcacheClear'])->name('system.opcache-clear');
+
+// Direct & Fallback Storage Asset Server for shared hosting (cPanel when symlink is missing or blocked)
+Route::get('/storage/{path}', function (string $path) {
+    $path = ltrim(str_replace(['..', '\\'], ['', '/'], $path), '/');
+
+    $publicPath = public_path('storage/' . $path);
+    if (file_exists($publicPath) && is_file($publicPath)) {
+        return response()->file($publicPath);
+    }
+
+    $storagePath = storage_path('app/public/' . $path);
+    if (file_exists($storagePath) && is_file($storagePath)) {
+        try {
+            $destDir = dirname($publicPath);
+            if (!is_dir($destDir)) {
+                @mkdir($destDir, 0755, true);
+            }
+            if (!is_link(public_path('storage')) && !file_exists($publicPath)) {
+                @copy($storagePath, $publicPath);
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->file($storagePath);
+    }
+
+    abort(404);
+})->where('path', '.*')->name('storage.fallback');
 
 // Production ready
 
